@@ -84,12 +84,12 @@ function calculateYearAndSemester(admissionDate: string): { year: number; semest
     const admission = new Date(admissionDate);
     const now = new Date();
     const monthsDiff = (now.getFullYear() - admission.getFullYear()) * 12 + (now.getMonth() - admission.getMonth());
-    
+
     // Assuming 6 months per semester
     const totalSemesters = Math.floor(monthsDiff / 6) + 1;
     const year = Math.min(Math.ceil(totalSemesters / 2), 4);
     const semester = Math.min(totalSemesters, 8);
-    
+
     return { year, semester };
   } catch {
     return { year: 1, semester: 1 };
@@ -110,11 +110,32 @@ function generateBatch(admissionDate: string): string {
 }
 
 /**
+ * Calculate student status based on batch and current date
+ */
+function calculateStudentStatus(batch: string, year: number): "active" | "graduated" | "inactive" | "dropped" {
+  try {
+    const endYear = parseInt(batch.split("-")[1]);
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth(); // 0-11
+
+    // If end year has passed and we're past June (graduation month), mark as graduated
+    if (currentYear > endYear || (currentYear === endYear && currentMonth >= 5)) {
+      return "graduated";
+    }
+
+    // Still in course duration
+    return "active";
+  } catch {
+    return "active";
+  }
+}
+
+/**
  * Transform admission row to Student object
  */
 function transformAdmissionToStudent(row: any[], rowIndex: number): Student | null {
   const get = (field: keyof typeof ADMISSION_COLUMN_INDEX) => row[ADMISSION_COLUMN_INDEX[field]] || "";
-  
+
   // Only include completed admissions
   const status = get('applicationStatus').toLowerCase();
   if (status !== 'completed' && status !== 'paid') {
@@ -124,6 +145,9 @@ function transformAdmissionToStudent(row: any[], rowIndex: number): Student | nu
   const admissionDate = get('timestamp');
   const { year, semester } = calculateYearAndSemester(admissionDate);
   const batch = generateBatch(admissionDate);
+
+  // Calculate student status based on batch year
+  const studentStatus = calculateStudentStatus(batch, year);
 
   return {
     id: `APP-${rowIndex}`,
@@ -147,7 +171,7 @@ function transformAdmissionToStudent(row: any[], rowIndex: number): Student | nu
       section: undefined,
       admissionDate: admissionDate,
     },
-    status: "active",
+    status: studentStatus,
     createdAt: admissionDate,
     updatedAt: undefined,
     rowNumber: rowIndex + 1, // +1 for 1-indexed row numbers

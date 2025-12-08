@@ -23,6 +23,7 @@ import { getFaculty, getFacultyStats } from "@/actions/faculty/getFaculty";
 import { changeFacultyStatus } from "@/actions/faculty/changeFacultyStatus";
 import type { Faculty } from "@/actions/faculty/getFaculty";
 import type { FacultyStats } from "@/types/faculty";
+import JobReferralNotices from "@/components/job-referral-notices";
 
 export default function FacultyPage() {
     const router = useRouter();
@@ -328,6 +329,9 @@ export default function FacultyPage() {
                     </CardContent>
                 </Card>
             )}
+
+            {/* Alumni Job Referrals Section */}
+            <JobReferralNotices maxDisplay={3} showHeader={true} />
 
             {/* Faculty Table */}
             <Card className="shadow-sm">
