@@ -15,6 +15,9 @@ import {
   Share2,
   LucideIcon,
   Briefcase,
+  Award,
+  UserPlus,
+  TrendingUp,
 } from "lucide-react"
 
 export interface NavItem {
@@ -29,6 +32,38 @@ export interface NavItem {
     isActive?: boolean
   }[]
 }
+
+/**
+ * Alumni Navigation Configuration
+ * Navigation items for graduated students
+ */
+export const alumniNavigation: NavItem[] = [
+  {
+    title: "Dashboard",
+    url: "/dashboard/alumni",
+    icon: Home,
+  },
+  {
+    title: "My Profile",
+    url: "/dashboard/alumni/profile",
+    icon: Users,
+  },
+  {
+    title: "Events",
+    url: "/dashboard/alumni/events",
+    icon: Calendar,
+  },
+  {
+    title: "Alumni Directory",
+    url: "/dashboard/alumni/directory",
+    icon: UserPlus,
+  },
+  {
+    title: "Student Referrals",
+    url: "/dashboard/alumni/referrals",
+    icon: Share2,
+  },
+]
 
 /**
  * Role-Based Navigation Configuration
