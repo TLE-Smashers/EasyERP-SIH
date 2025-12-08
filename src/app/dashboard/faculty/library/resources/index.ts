@@ -1,0 +1,1 @@
+export { FacultyResourcesManager } from './FacultyResourcesManager';
