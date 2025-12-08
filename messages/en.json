@@ -1,0 +1,93 @@
+{
+  "HomePage": {
+    "badge": "Lightning Fast ERP",
+    "tagline": "Reliable ERP for Student Management",
+    "login": "Login",
+    "getStarted": "Get Started",
+
+    "heroLine1": "Low-Cost ERP Solution for",
+    "heroLine2": "Student Management",
+
+    "heroDescription": "Replace fragmented ledgers and manual entries with an integrated system for admissions, fee collection, hostel allocation, and library management - all without heavy capital investment.",
+
+    "startFreeTrial": "Start Free Trial",
+    "watchDemo": "Watch Demo",
+
+    "benefit1": "No heavy capital investment",
+    "benefit2": "Cloud-based solution",
+    "benefit3": "Easy to deploy",
+
+    "statsCloud": "Cloud-Based",
+    "statZero": "Zero",
+    "statsInvestment": "Heavy Investment",
+    "statRealtime": "Real-Time",
+    "statDataSync": "Data Sync",
+    "statUserRoles": "User Roles",
+
+    "featureSectionTitle": "Eliminate Fragmented Processes",
+    "featureSectionDesc": "Say goodbye to multiple ledgers and manual entries. One centralized system for all student-related processes.",
+
+    "admissionTitle": "Streamlined Admissions",
+    "admissionDesc": "Replace manual forms with integrated online intake feeding directly into centralized database",
+    "admissionPoint1": "Customized online forms",
+    "admissionPoint2": "Centralized student database",
+    "admissionPoint3": "Eliminate re-entry of data",
+
+    "accountsTitle": "Automated Fee Collection",
+    "accountsDesc": "Track fee payments with instant digital receipts and automatic ledger updates",
+    "accountsPoint1": "Digital receipt generation",
+    "accountsPoint2": "Automatic ledger updates",
+    "accountsPoint3": "Real-time payment tracking",
+
+    "libraryTitle": "Library Occupancy Tracking",
+    "libraryDesc": "Live tracking of book inventory and student borrowing connected to core database",
+    "libraryPoint1": "Real-time availability",
+    "libraryPoint2": "Automated issue/return",
+    "libraryPoint3": "Minimal manual intervention",
+
+    "hostelTitle": "Hostel Allocation & Tracking",
+    "hostelDesc": "Live occupancy tracking and room allocation synced with student records",
+    "hostelPoint1": "Real-time occupancy status",
+    "hostelPoint2": "Automated room allocation",
+    "hostelPoint3": "Connected to core database",
+
+    "analyticsTitle": "Real-Time Dashboards",
+    "analyticsDesc": "Live institutional overview with summary reports and KPIs for administrators",
+    "analyticsPoint1": "Role-based dashboards",
+    "analyticsPoint2": "Key performance metrics",
+    "analyticsPoint3": "Consolidated overview",
+
+    "securityTitle": "Security & Governance",
+    "securityDesc": "Role-based access control with automated backups and encrypted storage",
+    "securityPoint1": "Role-based access control",
+    "securityPoint2": "Automated backups",
+    "securityPoint3": "Encrypted data storage",
+
+    "ctaTitle": "Affordable ERP for Every College",
+    "ctaDesc": "Built with familiar cloud-based tools. No heavy capital investment. Quick adoption with minimal training overhead.",
+    "ctaDashboard": "Access Dashboard",
+    "ctaDocs": "View Documentation",
+
+    "footerDescription": "Low-cost ERP solution using cloud-based services. Eliminate fragmented ledgers and manual entries. Built for Smart India Hackathon 2025.",
+
+    "footerSolution": "Solution",
+    "footerFeatures": "Features",
+    "footerArchitecture": "Architecture",
+    "footerLiveDemo": "Live Demo",
+    "footerDocumentation": "Documentation",
+
+    "footerProject": "Project",
+    "footerAboutSIH": "About SIH 2025",
+    "footerPS": "Problem Statement",
+    "footerTeam": "Team",
+    "footerGithub": "GitHub",
+
+    "footerLegal": "Legal",
+    "footerPrivacy": "Privacy Policy",
+    "footerTerms": "Terms of Service",
+    "footerCookie": "Cookie Policy",
+    "footerLicense": "License",
+
+    "footerCopyright": "© 2025 Easy ERP. All rights reserved. Built with ❤️ for SIH 2025"
+  }
+}

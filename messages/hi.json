@@ -1,0 +1,92 @@
+{
+  "HomePage": {
+    "badge": "तेज़ और विश्वसनीय ERP",
+    "tagline": "छात्र प्रबंधन के लिए विश्वसनीय ERP",
+    "login": "लॉगिन",
+    "getStarted": "शुरू करें",
+
+    "heroLine1": "स्टूडेंट मैनेजमेंट के लिए कम लागत वाला ERP समाधान",
+    "heroLine2": "",
+    "heroDescription": "टूटी-फूटी लेज़र और मैन्युअल एंट्री की परेशानी खत्म करें। एडमिशन, फीस, हॉस्टल और लाइब्रेरी मैनेजमेंट के लिए एकीकृत सिस्टम, वह भी बिना भारी निवेश के।",
+
+    "startFreeTrial": "फ्री ट्रायल शुरू करें",
+    "watchDemo": "डेमो देखें",
+
+    "benefit1": "कोई भारी निवेश नहीं",
+    "benefit2": "क्लाउड आधारित समाधान",
+    "benefit3": "आसानी से लागू करें",
+
+    "statsCloud": "क्लाउड-बेस्ड",
+    "statZero": "शून्य",
+    "statsInvestment": "भारी निवेश",
+    "statRealtime": "रीयल-टाइम",
+    "statDataSync": "डेटा सिंक",
+    "statUserRoles": "यूज़र रोल्स",
+
+    "featureSectionTitle": "टूटे-फूटे प्रोसेस खत्म करें",
+    "featureSectionDesc": "मल्टीपल लेज़रों और मैन्युअल एंट्री को अलविदा। सभी छात्र प्रक्रियाओं के लिए एक केंद्रित सिस्टम।",
+
+    "admissionTitle": "सुगम एडमिशन",
+    "admissionDesc": "मैन्युअल फॉर्म की जगह केंद्रीकृत डेटाबेस में डायरेक्ट डेटा एंट्री।",
+    "admissionPoint1": "कस्टम ऑनलाइन फॉर्म",
+    "admissionPoint2": "केंद्रीकृत छात्र डेटाबेस",
+    "admissionPoint3": "दोबारा डेटा भरने की ज़रूरत नहीं",
+
+    "accountsTitle": "ऑटोमेटेड फीस कलेक्शन",
+    "accountsDesc": "डिजिटल रसीदें और ऑटो लेज़र अपडेट के साथ आसान ट्रैकिंग।",
+    "accountsPoint1": "डिजिटल रसीद",
+    "accountsPoint2": "ऑटो लेज़र अपडेट",
+    "accountsPoint3": "रीयल-टाइम ट्रैकिंग",
+
+    "libraryTitle": "लाइब्रेरी ट्रैकिंग",
+    "libraryDesc": "बुक इन्वेंट्री और इशू/रिटर्न का लाइव ट्रैकिंग।",
+    "libraryPoint1": "रीयल-टाइम उपलब्धता",
+    "libraryPoint2": "ऑटो इशू/रिटर्न",
+    "libraryPoint3": "कम मैनुअल काम",
+
+    "hostelTitle": "हॉस्टल आवंटन व ट्रैकिंग",
+    "hostelDesc": "रूम ऑक्यूपेंसी और आवंटन का लाइव ट्रैकिंग।",
+    "hostelPoint1": "रीयल-टाइम ऑक्यूपेंसी",
+    "hostelPoint2": "ऑटो आवंटन",
+    "hostelPoint3": "केंद्रीकृत रिकॉर्ड से जुड़ा",
+
+    "analyticsTitle": "रीयल-टाइम डैशबोर्ड",
+    "analyticsDesc": "एडमिनिस्ट्रेटर्स के लिए सारांश रिपोर्ट और प्रमुख KPIs।",
+    "analyticsPoint1": "रोल-आधारित डैशबोर्ड",
+    "analyticsPoint2": "मुख्य परफॉर्मेंस मेट्रिक्स",
+    "analyticsPoint3": "संयुक्त अवलोकन",
+
+    "securityTitle": "सुरक्षा व प्रबंधन",
+    "securityDesc": "रोल-आधारित एक्सेस, ऑटोमेटेड बैकअप और एन्क्रिप्टेड स्टोरेज।",
+    "securityPoint1": "रोल-आधारित एक्सेस",
+    "securityPoint2": "ऑटोमेटेड बैकअप",
+    "securityPoint3": "एन्क्रिप्टेड स्टोरेज",
+
+    "ctaTitle": "हर कॉलेज के लिए किफायती ERP",
+    "ctaDesc": "फैमिलियर क्लाउड टूल्स के साथ निर्मित। बिना भारी निवेश। जल्दी अपनाएं, कम ट्रेनिंग की ज़रूरत।",
+    "ctaDashboard": "डैशबोर्ड एक्सेस करें",
+    "ctaDocs": "डॉक्यूमेंटेशन देखें",
+
+    "footerDescription": "क्लाउड आधारित सेवाओं का उपयोग कर कम लागत वाला ERP। टूटे-फूटे लेज़रों और मैन्युअल एंट्री को खत्म करें। Smart India Hackathon 2025 के लिए निर्मित।",
+
+    "footerSolution": "सॉल्यूशन",
+    "footerFeatures": "फीचर्स",
+    "footerArchitecture": "आर्किटेक्चर",
+    "footerLiveDemo": "लाइव डेमो",
+    "footerDocumentation": "डॉक्यूमेंटेशन",
+
+    "footerProject": "प्रोजेक्ट",
+    "footerAboutSIH": "SIH 2025 के बारे में",
+    "footerPS": "समस्या विवरण",
+    "footerTeam": "टीम",
+    "footerGithub": "GitHub",
+
+    "footerLegal": "कानूनी",
+    "footerPrivacy": "प्राइवेसी पॉलिसी",
+    "footerTerms": "टर्म्स ऑफ सर्विस",
+    "footerCookie": "कुकी पॉलिसी",
+    "footerLicense": "लाइसेंस",
+
+    "footerCopyright": "© 2025 Easy ERP. सभी अधिकार सुरक्षित। SIH 2025 के लिए ❤️ से निर्मित"
+  }
+}

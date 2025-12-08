@@ -1,0 +1,92 @@
+{
+  "HomePage": {
+    "badge": "जोड़दार रफ्तार वालो ERP",
+    "tagline": "विद्यार्थी प्रबंधन खातर जोड़दार ERP",
+    "login": "लॉगिन",
+    "getStarted": "शुरू करो",
+
+    "heroLine1": "विद्यार्थी प्रबंधन खातर सस्तो ERP समाधान",
+    "heroLine2": "",
+    "heroDescription": "टूट-फूट वाले रजिस्टर अर मैन्युअल लिखाण नै छोड़ी देवो। एडमिशन, फीस, हॉस्टल अर लाइब्रेरी माँ एको सिस्टम—भी बिना भारी खर्चा।",
+
+    "startFreeTrial": "फ्री ट्रायल चालू करो",
+    "watchDemo": "डेमो देखो",
+
+    "benefit1": "कोई भारी खर्चो नै",
+    "benefit2": "पूरो क्लाउड पर चालै",
+    "benefit3": "आसानी सै लागू हो जावै",
+
+    "statsCloud": "क्लाउड-बेस्ड",
+    "statZero": "शून्य",
+    "statsInvestment": "भारी खर्चो",
+    "statRealtime": "रीयल-टाइम",
+    "statDataSync": "डेटा सिंक",
+    "statUserRoles": "यूजर रोल्स",
+
+    "featureSectionTitle": "टुकड़-टुकड़ वाला काम खतम करो",
+    "featureSectionDesc": "कई-कई रजिस्टर अर मैन्युअल लिखाण नै भूल जावो। एक जागा पै सब काम।",
+
+    "admissionTitle": "सहज एडमिशन",
+    "admissionDesc": "मैन्युअल फार्म छोड़ी, डायरेक्ट डेटाबेस माँ एंट्री।",
+    "admissionPoint1": "कस्टम ऑनलाइन फार्म",
+    "admissionPoint2": "केंद्रीकृत विद्यार्थी रिकॉर्ड",
+    "admissionPoint3": "डबल एंट्री नै करनी पड़ै",
+
+    "accountsTitle": "ऑटो फीस कलेक्शन",
+    "accountsDesc": "डिजिटल रसीद अर ऑटो लेजर अपडेट।",
+    "accountsPoint1": "डिजिटल रसीद",
+    "accountsPoint2": "ऑटो लेजर अपडेट",
+    "accountsPoint3": "रीयल-टाइम ट्रैकिंग",
+
+    "libraryTitle": "लाइब्रेरी ट्रैकिंग",
+    "libraryDesc": "बुक अर जारी/वापसी रो लाइव ट्रैकिंग।",
+    "libraryPoint1": "रीयल-टाइम उपलब्धता",
+    "libraryPoint2": "ऑटो जारी/वापसी",
+    "libraryPoint3": "कम मैन्युअल काम",
+
+    "hostelTitle": "हॉस्टल आवंटन अर ट्रैकिंग",
+    "hostelDesc": "रूम भराव अर आवंटन रो लाइव ट्रैकिंग।",
+    "hostelPoint1": "रीयल-टाइम ऑक्यूपेंसी",
+    "hostelPoint2": "ऑटो आवंटन",
+    "hostelPoint3": "डेटाबेस सँग जुड़ेलो",
+
+    "analyticsTitle": "रीयल-टाइम डैशबोर्ड",
+    "analyticsDesc": "अधिकारियान खातर सारांश अर मुख्य KPIs।",
+    "analyticsPoint1": "रोल आधारित डैशबोर्ड",
+    "analyticsPoint2": "मुख्य परफॉर्मेंस मेट्रिक्स",
+    "analyticsPoint3": "जोड़-तोड़ रो पूरा अवलोकन",
+
+    "securityTitle": "सुरक्षा अर शासन",
+    "securityDesc": "रोल आधारित एक्सेस, ऑटो बैकअप अर एन्क्रिप्टेड स्टोरेज।",
+    "securityPoint1": "रोल आधारित एक्सेस",
+    "securityPoint2": "ऑटोमेटेड बैकअप",
+    "securityPoint3": "एन्क्रिप्टेड स्टोरेज",
+
+    "ctaTitle": "हर कॉलेज खातर सस्तो ERP",
+    "ctaDesc": "जाणकार क्लाउड टूल्स सँग बनायेलो। भारी खर्चा बिनै। जल्दी अपनाव, कम ट्रेनिंग मां काम।",
+    "ctaDashboard": "डैशबोर्ड खोलो",
+    "ctaDocs": "डॉक्यूमेंटेशन देखो",
+
+    "footerDescription": "क्लाउड आधारित सेवाव रो उपयोग कर सस्तो ERP। टूटल-फूटल रजिस्टर अर मैन्युअल लिखाण नै खतम करो। SIH 2025 खातर बनायेलो।",
+
+    "footerSolution": "सोल्यूशन",
+    "footerFeatures": "फीचर्स",
+    "footerArchitecture": "आर्किटेक्चर",
+    "footerLiveDemo": "लाइव डेमो",
+    "footerDocumentation": "डॉक्यूमेंटेशन",
+
+    "footerProject": "प्रोजेक्ट",
+    "footerAboutSIH": "SIH 2025 बारे",
+    "footerPS": "प्रॉब्लम स्टेटमेंट",
+    "footerTeam": "टीम",
+    "footerGithub": "GitHub",
+
+    "footerLegal": "कानूनी",
+    "footerPrivacy": "प्राइवेसी पॉलिसी",
+    "footerTerms": "टर्म्स ऑफ सर्विस",
+    "footerCookie": "कुकी पॉलिसी",
+    "footerLicense": "लाइसेंस",
+
+    "footerCopyright": "© 2025 Easy ERP. सारे हुक्क हक्क राखेला। SIH 2025 खातर ❤️ सै बनायेलो"
+  }
+}
