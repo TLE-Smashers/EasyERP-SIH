@@ -14,6 +14,7 @@ import {
   Bell,
   Share2,
   LucideIcon,
+  Briefcase,
 } from "lucide-react"
 
 export interface NavItem {
