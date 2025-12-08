@@ -98,46 +98,62 @@ async function getFacultyContext(userId: string, userName: string): Promise<Cont
   const sheets = await getSheetsClient();
   const data: Record<string, unknown> = {};
   
+  // Helper to safely fetch sheets
+  const fetchSheet = async (sheetName: string) => {
+    try {
+      const response = await sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `${sheetName}!A:Z`,
+      });
+      return response.data.values || [];
+    } catch (err) {
+      console.warn(`Sheet ${sheetName} not found:`, err);
+      return [];
+    }
+  };
+  
   try {
-    // Fetch attendance records managed by faculty
-    const attendanceResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: 'Attendance!A:Z',
-    });
+    // Fetch ALL attendance records (full context for faculty)
+    data.allAttendance = await fetchSheet('FacultyAttendance');
     
-    const attendanceRows = attendanceResponse.data.values || [];
+    // Fetch faculty's own attendance records
+    const attendanceRows = data.allAttendance as unknown[][];
     if (attendanceRows.length > 1) {
-      const headers = attendanceRows[0];
-      const facultyAttendance = attendanceRows.slice(1).filter(row => 
-        row[headers.indexOf('facultyId')] === userId ||
-        row[headers.indexOf('markedBy')] === userId
-      );
-      data.attendance = facultyAttendance;
+      const headers = attendanceRows[0] as string[];
+      const facultyAttendance = attendanceRows.slice(1).filter((row: unknown[]) => {
+        const rowData = row as string[];
+        return rowData[headers.indexOf('facultyId')] === userId ||
+               rowData[headers.indexOf('markedBy')] === userId;
+      });
+      data.myAttendance = facultyAttendance;
     }
     
-    // Fetch marks uploaded by faculty
-    const marksResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: 'Marks!A:Z',
-    });
+    // Fetch ALL marks (full context)
+    data.allMarks = await fetchSheet('Marks');
     
-    const marksRows = marksResponse.data.values || [];
+    // Fetch faculty's uploaded marks
+    const marksRows = data.allMarks as unknown[][];
     if (marksRows.length > 1) {
-      const headers = marksRows[0];
-      const facultyMarks = marksRows.slice(1).filter(row => 
-        row[headers.indexOf('facultyId')] === userId ||
-        row[headers.indexOf('uploadedBy')] === userId
-      );
-      data.marks = facultyMarks;
+      const headers = marksRows[0] as string[];
+      const facultyMarks = marksRows.slice(1).filter((row: unknown[]) => {
+        const rowData = row as string[];
+        return rowData[headers.indexOf('facultyId')] === userId ||
+               rowData[headers.indexOf('uploadedBy')] === userId;
+      });
+      data.myMarks = facultyMarks;
     }
     
-    // Fetch students info
-    const studentsResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: 'Students!A:Z',
-    });
+    // Fetch ALL students info (full context)
+    data.students = await fetchSheet('Students');
     
-    data.students = studentsResponse.data.values || [];
+    // Fetch faculty list for reference
+    data.faculty = await fetchSheet('Faculty');
+    
+    // Fetch leave requests (if exists)
+    data.leaveRequests = await fetchSheet('LeaveRequests');
+    
+    // Fetch timetable/schedule (if exists)
+    data.timetable = await fetchSheet('Timetable');
     
   } catch (error) {
     console.error('Error fetching faculty context:', error);
@@ -161,13 +177,42 @@ async function getAdmissionContext(userId: string, userName: string): Promise<Co
   const sheets = await getSheetsClient();
   const data: Record<string, unknown> = {};
   
+  // Helper to safely fetch sheets
+  const fetchSheet = async (sheetName: string) => {
+    try {
+      const response = await sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `${sheetName}!A:Z`,
+      });
+      return response.data.values || [];
+    } catch (err) {
+      console.warn(`Sheet ${sheetName} not found:`, err);
+      return [];
+    }
+  };
+  
   try {
-    const admissionsResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: 'Admissions!A:Z',
-    });
+    // Fetch ALL admissions (full context)
+    data.admissions = await fetchSheet('Admissions');
     
-    data.admissions = admissionsResponse.data.values || [];
+    // Fetch ALL students (for admitted students)
+    data.students = await fetchSheet('Students');
+    
+    // Fetch admission applications (if exists)
+    data.applications = await fetchSheet('AdmissionApplications');
+    
+    // Fetch admission documents (if exists)
+    data.documents = await fetchSheet('AdmissionDocuments');
+    
+    // Fetch admission payments (if exists)
+    data.admissionPayments = await fetchSheet('AdmissionPayments');
+    
+    // Fetch course/branch details
+    data.courses = await fetchSheet('Courses');
+    
+    // Fetch admission criteria/cutoffs (if exists)
+    data.criteria = await fetchSheet('AdmissionCriteria');
+    
   } catch (error) {
     console.error('Error fetching admission context:', error);
   }
@@ -190,30 +235,44 @@ async function getLibrarianContext(userId: string, userName: string): Promise<Co
   const sheets = await getSheetsClient();
   const data: Record<string, unknown> = {};
   
+  // Helper to safely fetch sheets
+  const fetchSheet = async (sheetName: string) => {
+    try {
+      const response = await sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `${sheetName}!A:Z`,
+      });
+      return response.data.values || [];
+    } catch (err) {
+      console.warn(`Sheet ${sheetName} not found:`, err);
+      return [];
+    }
+  };
+  
   try {
-    // Fetch all books
-    const booksResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: 'Library_Books!A:Z',
-    });
+    // Fetch ALL library books (full catalog)
+    data.books = await fetchSheet('Library_Books');
     
-    data.books = booksResponse.data.values || [];
+    // Fetch ALL book issues (full context)
+    data.issues = await fetchSheet('Library_Issues');
     
-    // Fetch all issues
-    const issuesResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: 'Library_Issues!A:Z',
-    });
+    // Fetch ALL library requests (full context)
+    data.requests = await fetchSheet('Library_Requests');
     
-    data.issues = issuesResponse.data.values || [];
+    // Fetch library resources/e-books (if exists)
+    data.resources = await fetchSheet('LibraryResources');
     
-    // Fetch requests
-    const requestsResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: 'Library_Requests!A:Z',
-    });
+    // Fetch students for reference
+    data.students = await fetchSheet('Students');
     
-    data.requests = requestsResponse.data.values || [];
+    // Fetch faculty for reference
+    data.faculty = await fetchSheet('Faculty');
+    
+    // Fetch library members (if exists)
+    data.members = await fetchSheet('LibraryMembers');
+    
+    // Fetch library fines (if exists)
+    data.fines = await fetchSheet('LibraryFines');
     
   } catch (error) {
     console.error('Error fetching librarian context:', error);
@@ -237,13 +296,48 @@ async function getAccountantContext(userId: string, userName: string): Promise<C
   const sheets = await getSheetsClient();
   const data: Record<string, unknown> = {};
   
+  // Helper to safely fetch sheets
+  const fetchSheet = async (sheetName: string) => {
+    try {
+      const response = await sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `${sheetName}!A:Z`,
+      });
+      return response.data.values || [];
+    } catch (err) {
+      console.warn(`Sheet ${sheetName} not found:`, err);
+      return [];
+    }
+  };
+  
   try {
-    const paymentsResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: 'Payments!A:Z',
-    });
+    // Fetch ALL payments (full context)
+    data.payments = await fetchSheet('Payments');
     
-    data.payments = paymentsResponse.data.values || [];
+    // Fetch ALL students (for fee tracking)
+    data.students = await fetchSheet('Students');
+    
+    // Fetch admission payments
+    data.admissionPayments = await fetchSheet('AdmissionPayments');
+    
+    // Fetch fee structure (if exists)
+    data.feeStructure = await fetchSheet('FeeStructure');
+    
+    // Fetch hostel fees (if exists)
+    data.hostelFees = await fetchSheet('HostelFees');
+    
+    // Fetch library fines (if exists)
+    data.libraryFines = await fetchSheet('LibraryFines');
+    
+    // Fetch pending dues (if exists)
+    data.pendingDues = await fetchSheet('PendingDues');
+    
+    // Fetch scholarships (if exists)
+    data.scholarships = await fetchSheet('Scholarships');
+    
+    // Fetch refunds (if exists)
+    data.refunds = await fetchSheet('Refunds');
+    
   } catch (error) {
     console.error('Error fetching accountant context:', error);
   }
@@ -370,38 +464,85 @@ function generateStudentSummary(data: Record<string, unknown>, userName: string)
 }
 
 function generateFacultySummary(data: Record<string, unknown>, userName: string): string {
-  let summary = `Hello ${userName} (Faculty), here's your dashboard summary:\n\n`;
+  let summary = `Hello ${userName} (Faculty), you have access to comprehensive faculty module data:\n\n`;
   
-  if (Array.isArray(data.attendance) && data.attendance.length > 0) {
-    summary += `Attendance: ${data.attendance.length} records managed\n`;
-  }
+  const allAttendance = Array.isArray(data.allAttendance) ? data.allAttendance : [];
+  const allMarks = Array.isArray(data.allMarks) ? data.allMarks : [];
+  const students = Array.isArray(data.students) ? data.students : [];
+  const myAttendance = Array.isArray(data.myAttendance) ? data.myAttendance : [];
+  const myMarks = Array.isArray(data.myMarks) ? data.myMarks : [];
   
-  if (Array.isArray(data.marks) && data.marks.length > 0) {
-    summary += `Marks: ${data.marks.length} assessments uploaded\n`;
-  }
+  summary += `- Full Attendance Database: ${allAttendance.length > 1 ? allAttendance.length - 1 : 0} total records\n`;
+  summary += `- Your Attendance Records: ${myAttendance.length} records\n`;
+  summary += `- Full Marks Database: ${allMarks.length > 1 ? allMarks.length - 1 : 0} total records\n`;
+  summary += `- Your Uploaded Marks: ${myMarks.length} assessments\n`;
+  summary += `- All Students: ${students.length > 1 ? students.length - 1 : 0} students\n`;
+  summary += `\nYou can query about any student's attendance, marks, performance, or generate reports.`;
   
   return summary;
 }
 
 function generateAdmissionSummary(data: Record<string, unknown>, userName: string): string {
   const admissions = Array.isArray(data.admissions) ? data.admissions : [];
-  const total = admissions.length > 1 ? admissions.length - 1 : 0;
+  const students = Array.isArray(data.students) ? data.students : [];
+  const applications = Array.isArray(data.applications) ? data.applications : [];
   
-  return `Hello ${userName} (Admission Officer), you have ${total} applications to manage.`;
+  let summary = `Hello ${userName} (Admission Officer), you have access to comprehensive admission data:\n\n`;
+  summary += `- Total Admissions: ${admissions.length > 1 ? admissions.length - 1 : 0} records\n`;
+  summary += `- Total Students: ${students.length > 1 ? students.length - 1 : 0} students\n`;
+  
+  if (applications.length > 1) {
+    summary += `- Applications: ${applications.length - 1} applications\n`;
+  }
+  
+  summary += `\nYou can query about admissions, applications, student details, or generate reports.`;
+  
+  return summary;
 }
 
 function generateLibrarianSummary(data: Record<string, unknown>, userName: string): string {
   const books = Array.isArray(data.books) ? data.books : [];
   const issues = Array.isArray(data.issues) ? data.issues : [];
   const requests = Array.isArray(data.requests) ? data.requests : [];
+  const resources = Array.isArray(data.resources) ? data.resources : [];
+  const students = Array.isArray(data.students) ? data.students : [];
   
-  return `Hello ${userName} (Librarian), Library Status: ${books.length - 1 || 0} books, ${issues.length - 1 || 0} active issues, ${requests.length - 1 || 0} pending requests.`;
+  let summary = `Hello ${userName} (Librarian), you have access to complete library system data:\n\n`;
+  summary += `- Total Books: ${books.length > 1 ? books.length - 1 : 0} books in catalog\n`;
+  summary += `- Active Issues: ${issues.length > 1 ? issues.length - 1 : 0} book issues\n`;
+  summary += `- Pending Requests: ${requests.length > 1 ? requests.length - 1 : 0} requests\n`;
+  
+  if (resources.length > 1) {
+    summary += `- E-Resources: ${resources.length - 1} digital resources\n`;
+  }
+  
+  summary += `- Registered Users: ${students.length > 1 ? students.length - 1 : 0} members\n`;
+  summary += `\nYou can query about book availability, overdue books, issue/return history, or generate reports.`;
+  
+  return summary;
 }
 
 function generateAccountantSummary(data: Record<string, unknown>, userName: string): string {
   const payments = Array.isArray(data.payments) ? data.payments : [];
+  const students = Array.isArray(data.students) ? data.students : [];
+  const admissionPayments = Array.isArray(data.admissionPayments) ? data.admissionPayments : [];
+  const scholarships = Array.isArray(data.scholarships) ? data.scholarships : [];
   
-  return `Hello ${userName} (Accountant), you have ${payments.length - 1 || 0} payment records.`;
+  let summary = `Hello ${userName} (Accountant), you have access to complete financial data:\n\n`;
+  summary += `- Total Payment Records: ${payments.length > 1 ? payments.length - 1 : 0} transactions\n`;
+  summary += `- Total Students: ${students.length > 1 ? students.length - 1 : 0} students\n`;
+  
+  if (admissionPayments.length > 1) {
+    summary += `- Admission Payments: ${admissionPayments.length - 1} records\n`;
+  }
+  
+  if (scholarships.length > 1) {
+    summary += `- Scholarships: ${scholarships.length - 1} records\n`;
+  }
+  
+  summary += `\nYou can query about fee status, pending dues, payment history, collections, or generate financial reports.`;
+  
+  return summary;
 }
 
 /**

@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { QuickActions } from './QuickActions';
+import { useSession } from 'next-auth/react';
 
 interface Message {
   id: string;
@@ -21,6 +22,7 @@ interface ChatInterfaceProps {
 }
 
 export function ChatInterface({ onClose }: ChatInterfaceProps) {
+  const { data: session } = useSession();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -188,7 +190,10 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
 
       {/* Quick Actions */}
       <div className="p-2 border-t">
-        <QuickActions onAction={handleQuickAction} />
+        <QuickActions 
+          onAction={handleQuickAction} 
+          userRole={session?.user?.role}
+        />
       </div>
 
       {/* Input */}
