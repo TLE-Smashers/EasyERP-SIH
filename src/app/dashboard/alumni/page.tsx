@@ -107,7 +107,7 @@ export default function AlumniDashboardPage() {
                                 Welcome Back, {alumni.fullName || "Alumni"}!
                             </h1>
                             <p className="mt-1 text-blue-100">
-                                Alumni Portal - Stay connected with your alma mater
+                                Alumni Portal
                             </p>
                             <Badge className="mt-2 bg-white text-blue-600 hover:bg-white/90">
                                 <GraduationCap className="mr-1 h-3 w-3" />

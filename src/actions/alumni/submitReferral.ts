@@ -1,6 +1,7 @@
 "use server";
 
 import { google } from "googleapis";
+import { revalidatePath } from "next/cache";
 
 const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_ID;
 
@@ -19,6 +20,7 @@ export interface ReferralSubmission {
     contactPerson: string;
     contactEmail: string;
     contactPhone: string;
+    referralLink: string;
     additionalNotes: string;
 }
 
@@ -57,7 +59,7 @@ export async function submitReferral(data: ReferralSubmission) {
             // Add headers
             await sheets.spreadsheets.values.update({
                 spreadsheetId: SPREADSHEET_ID,
-                range: "AlumniReferrals!A1:Q1",
+                range: "AlumniReferrals!A1:R1",
                 valueInputOption: "RAW",
                 requestBody: {
                     values: [
@@ -78,6 +80,7 @@ export async function submitReferral(data: ReferralSubmission) {
                             "Contact Person",
                             "Contact Email",
                             "Contact Phone",
+                            "Referral Link",
                             "Additional Notes",
                         ],
                     ],
@@ -89,7 +92,7 @@ export async function submitReferral(data: ReferralSubmission) {
         const timestamp = new Date().toISOString();
         const row = [
             timestamp,
-            "pending", // Status: pending, approved, rejected
+            "approved", // Status: approved (auto-approved, directly visible to students)
             data.alumniEmail,
             data.alumniName,
             data.companyName,
@@ -104,21 +107,25 @@ export async function submitReferral(data: ReferralSubmission) {
             data.contactPerson,
             data.contactEmail,
             data.contactPhone,
+            data.referralLink,
             data.additionalNotes,
         ];
 
         await sheets.spreadsheets.values.append({
             spreadsheetId: SPREADSHEET_ID,
-            range: "AlumniReferrals!A:Q",
+            range: "AlumniReferrals!A:R",
             valueInputOption: "RAW",
             requestBody: {
                 values: [row],
             },
         });
 
+        // Revalidate student dashboard to show new referral immediately
+        revalidatePath("/dashboard/student");
+
         return {
             success: true,
-            message: "Referral submitted successfully and sent to admin for approval",
+            message: "Referral submitted successfully and is now visible to students",
         };
     } catch (error) {
         console.error("Error submitting referral:", error);
@@ -145,6 +152,7 @@ export interface ApprovedReferral {
     contactPerson: string;
     contactEmail: string;
     contactPhone: string;
+    referralLink: string;
 }
 
 export async function getApprovedReferrals(): Promise<ApprovedReferral[]> {
@@ -158,14 +166,24 @@ export async function getApprovedReferrals(): Promise<ApprovedReferral[]> {
 
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: SPREADSHEET_ID,
-            range: "AlumniReferrals!A2:Q",
+            range: "AlumniReferrals!A2:R",
         });
 
         const rows = response.data.values || [];
 
+        console.log("[getApprovedReferrals] Fetched rows:", rows.length);
+        console.log("[getApprovedReferrals] Sample rows:", JSON.stringify(rows.slice(0, 2), null, 2));
+
         // Filter only approved referrals
         const approvedReferrals = rows
-            .filter((row) => row[1]?.toLowerCase() === "approved")
+            .filter((row) => {
+                const status = row[1]?.toLowerCase()?.trim();
+                const isApproved = row.length > 1 && status === "approved";
+                if (row.length > 1) {
+                    console.log(`[getApprovedReferrals] Row filter - Status: "${row[1]}" -> "${status}" -> Approved: ${isApproved}`);
+                }
+                return isApproved;
+            })
             .map((row, index) => ({
                 id: `REF-${index + 1}`,
                 timestamp: row[0] || "",
@@ -182,7 +200,11 @@ export async function getApprovedReferrals(): Promise<ApprovedReferral[]> {
                 contactPerson: row[13] || "",
                 contactEmail: row[14] || "",
                 contactPhone: row[15] || "",
+                referralLink: row[16] || "",
             }));
+
+        console.log("[getApprovedReferrals] Total approved referrals:", approvedReferrals.length);
+        console.log("[getApprovedReferrals] Referrals:", JSON.stringify(approvedReferrals, null, 2));
 
         return approvedReferrals;
     } catch (error) {
@@ -191,7 +213,7 @@ export async function getApprovedReferrals(): Promise<ApprovedReferral[]> {
     }
 }
 
-export async function getPendingReferrals() {
+export async function getAllReferrals() {
     try {
         const auth = new google.auth.GoogleAuth({
             credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY!),
@@ -202,16 +224,61 @@ export async function getPendingReferrals() {
 
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: SPREADSHEET_ID,
-            range: "AlumniReferrals!A2:Q",
+            range: "AlumniReferrals!A2:R",
         });
 
         const rows = response.data.values || [];
 
+        return rows.map((row, index) => ({
+            rowNumber: index + 2,
+            timestamp: row[0] || "",
+            status: row[1] || "approved",
+            alumniEmail: row[2] || "",
+            alumniName: row[3] || "",
+            companyName: row[4] || "",
+            jobTitle: row[5] || "",
+            jobLocation: row[6] || "",
+            experienceRequired: row[7] || "",
+            skillsRequired: row[8] || "",
+            numberOfPositions: row[9] || "",
+            salary: row[10] || "",
+            jobDescription: row[11] || "",
+            applicationDeadline: row[12] || "",
+            contactPerson: row[13] || "",
+            contactEmail: row[14] || "",
+            contactPhone: row[15] || "",
+            referralLink: row[16] || "",
+            additionalNotes: row[17] || "",
+        }));
+    } catch (error) {
+        console.error("Error fetching referrals:", error);
+        return [];
+    }
+}
+
+export async function getUserReferrals(alumniEmail: string) {
+    try {
+        const auth = new google.auth.GoogleAuth({
+            credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY!),
+            scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+        });
+
+        const sheets = google.sheets({ version: "v4", auth });
+
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: SPREADSHEET_ID,
+            range: "AlumniReferrals!A2:R",
+        });
+
+        const rows = response.data.values || [];
+
+        // Filter referrals by alumni email
         return rows
+            .filter((row) => row[2]?.toLowerCase()?.trim() === alumniEmail.toLowerCase().trim())
             .map((row, index) => ({
-                rowNumber: index + 2,
+                id: `REF-${index + 1}`,
                 timestamp: row[0] || "",
-                status: row[1] || "pending",
+                status: row[1] || "approved",
                 alumniEmail: row[2] || "",
                 alumniName: row[3] || "",
                 companyName: row[4] || "",
@@ -226,45 +293,12 @@ export async function getPendingReferrals() {
                 contactPerson: row[13] || "",
                 contactEmail: row[14] || "",
                 contactPhone: row[15] || "",
-                additionalNotes: row[16] || "",
+                referralLink: row[16] || "",
+                additionalNotes: row[17] || "",
             }))
-            .filter((referral) => referral.status.toLowerCase() === "pending");
+            .reverse(); // Most recent first
     } catch (error) {
-        console.error("Error fetching pending referrals:", error);
+        console.error("Error fetching user referrals:", error);
         return [];
-    }
-}
-
-export async function updateReferralStatus(
-    rowNumber: number,
-    status: "approved" | "rejected"
-) {
-    try {
-        const auth = new google.auth.GoogleAuth({
-            credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY!),
-            scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-        });
-
-        const sheets = google.sheets({ version: "v4", auth });
-
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: SPREADSHEET_ID,
-            range: `AlumniReferrals!B${rowNumber}`,
-            valueInputOption: "RAW",
-            requestBody: {
-                values: [[status]],
-            },
-        });
-
-        return {
-            success: true,
-            message: `Referral ${status} successfully`,
-        };
-    } catch (error) {
-        console.error("Error updating referral status:", error);
-        return {
-            success: false,
-            message: "Failed to update referral status",
-        };
     }
 }

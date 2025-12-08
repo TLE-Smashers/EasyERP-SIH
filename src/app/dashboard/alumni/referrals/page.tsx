@@ -1,20 +1,23 @@
 "use client";
 
-import { useState } from "react";
-import { Send, Building2, Users, Briefcase, Mail, Phone, CheckCircle2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Send, Building2, Users, Briefcase, Mail, Phone, CheckCircle2, MapPin, Calendar, DollarSign, Link } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { submitReferral } from "@/actions/alumni/submitReferral";
+import { submitReferral, getUserReferrals } from "@/actions/alumni/submitReferral";
 import { useSession } from "next-auth/react";
 
 export default function AlumniReferralsPage() {
     const { data: session } = useSession();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [userReferrals, setUserReferrals] = useState<any[]>([]);
+    const [isLoadingReferrals, setIsLoadingReferrals] = useState(true);
 
     const [formData, setFormData] = useState({
         companyName: "",
@@ -29,8 +32,27 @@ export default function AlumniReferralsPage() {
         contactPerson: "",
         contactEmail: "",
         contactPhone: "",
+        referralLink: "",
         additionalNotes: "",
     });
+
+    useEffect(() => {
+        loadUserReferrals();
+    }, [session]);
+
+    const loadUserReferrals = async () => {
+        if (!session?.user?.email) return;
+
+        setIsLoadingReferrals(true);
+        try {
+            const referrals = await getUserReferrals(session.user.email);
+            setUserReferrals(referrals);
+        } catch (error) {
+            console.error("Error loading user referrals:", error);
+        } finally {
+            setIsLoadingReferrals(false);
+        }
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({
@@ -58,7 +80,10 @@ export default function AlumniReferralsPage() {
 
             if (result.success) {
                 setSubmitted(true);
-                toast.success("Referral request sent to admin successfully!");
+                toast.success("Referral published successfully! Students can now see it.");
+
+                // Reload user referrals
+                loadUserReferrals();
 
                 // Reset form after 3 seconds
                 setTimeout(() => {
@@ -76,6 +101,7 @@ export default function AlumniReferralsPage() {
                         contactPerson: "",
                         contactEmail: "",
                         contactPhone: "",
+                        referralLink: "",
                         additionalNotes: "",
                     });
                 }, 3000);
@@ -99,10 +125,10 @@ export default function AlumniReferralsPage() {
                             <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
                                 <CheckCircle2 className="h-8 w-8 text-green-600" />
                             </div>
-                            <h3 className="text-xl font-semibold">Request Sent Successfully!</h3>
+                            <h3 className="text-xl font-semibold">Referral Published Successfully!</h3>
                             <p className="text-muted-foreground">
-                                Your referral request has been sent to the institute admin. They will review
-                                and share the opportunity with eligible students.
+                                Your referral is now live and visible to all students on their dashboard.
+                                Students can directly contact you for this opportunity.
                             </p>
                         </div>
                     </CardContent>
@@ -132,7 +158,7 @@ export default function AlumniReferralsPage() {
                     <p>🎯 Help students get industry exposure and job opportunities</p>
                     <p>🤝 Strengthen the alumni-student connection</p>
                     <p>🏢 Build a talent pipeline for your company</p>
-                    <p>📢 Admin will share your referral with eligible students via email and notices</p>
+                    <p>📢 Your referral will be instantly visible to all students on their dashboard</p>
                 </CardContent>
             </Card>
 
@@ -141,7 +167,7 @@ export default function AlumniReferralsPage() {
                 <CardHeader>
                     <CardTitle>Job Referral Form</CardTitle>
                     <CardDescription>
-                        Fill in the details below. Admin will notify eligible students about this opportunity.
+                        Fill in the details below. Your referral will be instantly published to all students.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -305,6 +331,17 @@ export default function AlumniReferralsPage() {
                                     />
                                 </div>
                             </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="referralLink">Referral/Application Link</Label>
+                                <Input
+                                    id="referralLink"
+                                    name="referralLink"
+                                    type="url"
+                                    value={formData.referralLink}
+                                    onChange={handleChange}
+                                    placeholder="https://company.com/careers/apply or referral link"
+                                />
+                            </div>
                         </div>
 
                         {/* Additional Notes */}
@@ -331,7 +368,7 @@ export default function AlumniReferralsPage() {
                                 ) : (
                                     <>
                                         <Send className="mr-2 h-4 w-4" />
-                                        Send Referral Request to Admin
+                                        Send Referral
                                     </>
                                 )}
                             </Button>
@@ -347,11 +384,88 @@ export default function AlumniReferralsPage() {
                     <CardDescription>Track the referrals you've submitted</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-center py-8 text-muted-foreground">
-                        <Users className="mx-auto h-12 w-12 mb-2 opacity-50" />
-                        <p>No referrals submitted yet</p>
-                        <p className="text-sm mt-1">Your referral history will appear here</p>
-                    </div>
+                    {isLoadingReferrals ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                            <span className="animate-spin inline-block">⏳</span>
+                            <p className="mt-2">Loading your referrals...</p>
+                        </div>
+                    ) : userReferrals.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                            <Users className="mx-auto h-12 w-12 mb-2 opacity-50" />
+                            <p>No referrals submitted yet</p>
+                            <p className="text-sm mt-1">Your referral history will appear here</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {userReferrals.map((referral) => (
+                                <Card key={referral.id} className="border-l-4 border-l-green-500">
+                                    <CardHeader className="pb-3">
+                                        <div className="flex items-start justify-between gap-2">
+                                            <div className="flex-1">
+                                                <CardTitle className="text-lg">{referral.jobTitle}</CardTitle>
+                                                <p className="text-sm text-muted-foreground mt-1">
+                                                    {referral.companyName}
+                                                </p>
+                                            </div>
+                                            <Badge variant="default">Live</Badge>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="space-y-3">
+                                        <div className="grid gap-2 text-sm">
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <MapPin className="h-4 w-4" />
+                                                <span>{referral.jobLocation}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <Briefcase className="h-4 w-4" />
+                                                <span>Experience: {referral.experienceRequired}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <DollarSign className="h-4 w-4" />
+                                                <span>Salary: {referral.salary}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <Users className="h-4 w-4" />
+                                                <span>Positions: {referral.numberOfPositions}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <Calendar className="h-4 w-4" />
+                                                <span>Deadline: {referral.applicationDeadline}</span>
+                                            </div>
+                                            {referral.referralLink && (
+                                                <div className="flex items-center gap-2 text-muted-foreground">
+                                                    <Link className="h-4 w-4" />
+                                                    <a
+                                                        href={referral.referralLink}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-blue-600 hover:underline truncate"
+                                                    >
+                                                        {referral.referralLink}
+                                                    </a>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {referral.jobDescription && (
+                                            <div>
+                                                <p className="text-sm font-medium mb-1">Description</p>
+                                                <p className="text-sm text-muted-foreground">{referral.jobDescription}</p>
+                                            </div>
+                                        )}
+
+                                        <div className="text-xs text-muted-foreground border-t pt-2">
+                                            Posted on {new Date(referral.timestamp).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            })}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>
