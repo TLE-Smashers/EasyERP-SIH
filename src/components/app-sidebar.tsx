@@ -15,7 +15,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
-import { getNavigationForRole } from "@/config/navigation"
+import { getNavigationForRole, getAlumniNavigation } from "@/config/navigation"
 import { UserRole } from "@/types/auth"
 import { cn } from "@/lib/utils"
 
@@ -34,27 +34,37 @@ function isItemActive(item: any, pathname: string): boolean {
   if (item.url !== "#" && pathname === item.url) {
     return true
   }
-  
+
   // If item has sub-items, check if any sub-item matches
   if (item.items && item.items.length > 0) {
     return item.items.some((subItem: any) => pathname === subItem.url || pathname.startsWith(subItem.url + "/"))
   }
-  
+
   // For items with "#" URL, check if pathname starts with the base path
   if (item.url === "#") {
     const basePath = item.items?.[0]?.url?.split("/").slice(0, -1).join("/") || ""
     return pathname.startsWith(basePath)
   }
-  
+
   return false
 }
 
 export function AppSidebar({ user, ...props }: AppSidebarProps) {
   const pathname = usePathname()
-  
-  // Get navigation items based on user role
-  const navItems = user ? getNavigationForRole(user.role) : []
-  
+
+  // Check if the current path is alumni dashboard
+  const isAlumniPath = pathname.startsWith('/dashboard/alumni')
+
+  // Get navigation items based on user role or alumni status
+  const navItems = React.useMemo(() => {
+    if (!user) return []
+    // If user is on alumni path and is a student, show alumni navigation
+    if (isAlumniPath && user.role === 'student') {
+      return getAlumniNavigation()
+    }
+    return getNavigationForRole(user.role)
+  }, [user, isAlumniPath])
+
   // Determine active navigation items based on current pathname
   const activeNavItems = React.useMemo(() => {
     return navItems.map(item => ({
@@ -66,21 +76,21 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       }))
     }))
   }, [navItems, pathname])
-  
+
   const { state, toggleSidebar } = useSidebar()
   const isCollapsed = state === "collapsed"
-  
+
   // Debug logging
   console.log('Sidebar - User role:', user?.role);
   console.log('Sidebar - Nav items count:', navItems.length);
-  
+
   // Default user data if not provided
   const userData = user || {
     name: "Guest User",
     email: "guest@example.com",
     avatar: "",
   }
-  
+
   const teamData = {
     name: "Easy ERP",
     logo: "/logoEasyErp.png",

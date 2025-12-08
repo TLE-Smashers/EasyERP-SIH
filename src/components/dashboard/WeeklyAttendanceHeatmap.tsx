@@ -102,7 +102,7 @@ const getColorForValue = (value: number): string => {
 
 export function WeeklyAttendanceHeatmap({ data = defaultData }: MonthlyAttendanceHeatmapProps) {
   const months = ["Sep", "Oct", "Nov"]
-  
+
   // Group data by month
   const dataByMonth: { [key: string]: HeatmapData[] } = {}
   months.forEach(month => {
@@ -122,34 +122,34 @@ export function WeeklyAttendanceHeatmap({ data = defaultData }: MonthlyAttendanc
           Calendar heatmap showing attendance trends across months
         </CardDescription>
       </CardHeader>
-      <CardContent className="pb-2">
-        <ChartContainer config={chartConfig} className="h-[350px] w-full">
-          <div className="flex flex-col gap-3 p-2">
+      <CardContent className="pb-4">
+        <ChartContainer config={chartConfig} className="h-auto w-full">
+          <div className="flex flex-col gap-8 p-4">
             {months.map((month) => (
-              <div key={month} className="space-y-1.5">
-                <div className="text-xs font-semibold text-muted-foreground">{month}</div>
-                <div className="grid grid-cols-10 gap-1">
+              <div key={month} className="space-y-3">
+                <div className="text-sm font-semibold text-foreground">{month}</div>
+                <div className="grid grid-cols-10 gap-2.5">
                   {Array.from({ length: 31 }, (_, i) => i + 1).map((date) => {
                     const value = getValueForDate(month, date)
                     if (value === null) {
                       return (
                         <div
                           key={`${month}-${date}`}
-                          className="aspect-square rounded bg-muted/30"
+                          className="w-8 h-8 rounded bg-muted/20"
                         />
                       )
                     }
                     return (
                       <div
                         key={`${month}-${date}`}
-                        className="aspect-square rounded flex items-center justify-center font-semibold text-xs transition-transform hover:scale-110 cursor-pointer relative group"
-                        style={{ 
+                        className="w-8 h-8 rounded flex items-center justify-center font-semibold text-xs transition-all hover:scale-110 hover:shadow-lg cursor-pointer relative group"
+                        style={{
                           backgroundColor: getColorForValue(value),
                           color: 'white'
                         }}
                       >
-                        <span className="text-[10px] text-white">{date}</span>
-                        <div className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10 shadow-lg">
+                        <span className="text-[10px]">{date}</span>
+                        <div className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-900 text-white text-xs rounded-md py-1.5 px-2.5 whitespace-nowrap z-10 shadow-lg">
                           {month} {date}: {value}%
                         </div>
                       </div>
@@ -162,39 +162,39 @@ export function WeeklyAttendanceHeatmap({ data = defaultData }: MonthlyAttendanc
         </ChartContainer>
 
         {/* Legend */}
-        <div className="flex items-center justify-center gap-2 mt-2 text-[10px] flex-wrap px-2">
-          <span className="font-medium text-xs">Attendance:</span>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded" style={{ backgroundColor: "#dc2626" }} />
-            <span className="text-foreground">&lt;70%</span>
+        <div className="flex items-center justify-center gap-3 mt-4 text-xs flex-wrap px-4 py-3 bg-muted/10 rounded-lg border">
+          <span className="font-semibold text-sm text-foreground">Legend:</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3.5 h-3.5 rounded" style={{ backgroundColor: "#dc2626" }} />
+            <span>&lt;70%</span>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded" style={{ backgroundColor: "#ef4444" }} />
-            <span className="text-foreground">70-75%</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3.5 h-3.5 rounded" style={{ backgroundColor: "#ef4444" }} />
+            <span>70-75%</span>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded" style={{ backgroundColor: "#f97316" }} />
-            <span className="text-foreground">75-80%</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3.5 h-3.5 rounded" style={{ backgroundColor: "#f97316" }} />
+            <span>75-80%</span>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded" style={{ backgroundColor: "#fb923c" }} />
-            <span className="text-foreground">80-85%</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3.5 h-3.5 rounded" style={{ backgroundColor: "#fb923c" }} />
+            <span>80-85%</span>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded" style={{ backgroundColor: "#eab308" }} />
-            <span className="text-foreground">85-90%</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3.5 h-3.5 rounded" style={{ backgroundColor: "#eab308" }} />
+            <span>85-90%</span>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded" style={{ backgroundColor: "#84cc16" }} />
-            <span className="text-foreground">90-95%</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3.5 h-3.5 rounded" style={{ backgroundColor: "#84cc16" }} />
+            <span>90-95%</span>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded" style={{ backgroundColor: "#22c55e" }} />
-            <span className="text-foreground">&ge;95%</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3.5 h-3.5 rounded" style={{ backgroundColor: "#22c55e" }} />
+            <span>&ge;95%</span>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded bg-muted/30 border border-muted" />
-            <span className="text-foreground">No data</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3.5 h-3.5 rounded bg-muted/20 border border-muted" />
+            <span>No data</span>
           </div>
         </div>
       </CardContent>
