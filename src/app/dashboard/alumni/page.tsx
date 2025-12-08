@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "next-auth/react";
 import { getAlumniByEmail, getAlumniStats, type AlumniRecord } from "@/actions/alumni/getAlumni";
+import { getUserConnections } from "@/actions/alumni/connections";
 import { toast } from "sonner";
 
 export default function AlumniDashboardPage() {
@@ -28,6 +29,7 @@ export default function AlumniDashboardPage() {
         byBranch: { branch: string; count: number }[];
         byBatch: { batch: string; count: number }[];
     }>({ total: 0, byBranch: [], byBatch: [] });
+    const [connectionsCount, setConnectionsCount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -38,9 +40,10 @@ export default function AlumniDashboardPage() {
             }
 
             try {
-                const [alumniData, statsData] = await Promise.all([
+                const [alumniData, statsData, connections] = await Promise.all([
                     getAlumniByEmail(session.user.email),
                     getAlumniStats(),
+                    getUserConnections(session.user.email),
                 ]);
 
                 if (alumniData) {
@@ -50,6 +53,7 @@ export default function AlumniDashboardPage() {
                 }
 
                 setStats(statsData);
+                setConnectionsCount(connections.length);
             } catch (error) {
                 console.error("Error loading alumni data:", error);
                 toast.error("Failed to load alumni data");
@@ -137,13 +141,13 @@ export default function AlumniDashboardPage() {
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Alumni Network</CardTitle>
+                        <CardTitle className="text-sm font-medium">My Connections</CardTitle>
                         <Users className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stats.total}+</div>
+                        <div className="text-2xl font-bold">{connectionsCount}</div>
                         <p className="text-xs text-muted-foreground">
-                            Active alumni members
+                            Connected alumni
                         </p>
                     </CardContent>
                 </Card>
@@ -154,7 +158,7 @@ export default function AlumniDashboardPage() {
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">12</div>
+                        <div className="text-2xl font-bold">0</div>
                         <p className="text-xs text-muted-foreground">
                             Upcoming alumni events
                         </p>
