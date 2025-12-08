@@ -12,6 +12,7 @@ import {
   Users,
   Wallet,
   Bell,
+  Share2,
   LucideIcon,
 } from "lucide-react"
 
@@ -39,6 +40,11 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
       title: "Dashboard",
       url: "/dashboard",
       icon: Home,
+    },
+    {
+      title: "Shared Resources",
+      url: "/dashboard/shared-resources",
+      icon: Share2,
     },
     {
       title: "Admission",
@@ -220,6 +226,11 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
       icon: Home,
     },
     {
+      title: "Shared Resources",
+      url: "/dashboard/shared-resources",
+      icon: Share2,
+    },
+    {
       title: "Exams",
       url: "#",
       icon: Calendar,
@@ -265,6 +276,11 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
       title: "Dashboard",
       url: "/dashboard/faculty",
       icon: Home,
+    },
+    {
+      title: "Shared Resources",
+      url: "/dashboard/shared-resources",
+      icon: Share2,
     },
     {
       title: "My Profile",
