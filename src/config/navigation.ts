@@ -82,6 +82,7 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
         { title: "Pending Requests", url: "/dashboard/library/requests" },
         { title: "Issued Books", url: "/dashboard/library/issues" },
         { title: "Book Catalog", url: "/dashboard/library/books" },
+        { title: "E-Books & Resources", url: "/dashboard/library/resources" },
       ],
     },
     {

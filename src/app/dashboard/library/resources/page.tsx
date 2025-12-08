@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LibrarianResourcesManager } from './LibrarianResourcesManager';
+import { ResourcesList } from '@/components/library/ResourcesList';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +16,7 @@ export default async function LibrarianResourcesPage() {
   }
 
   const librarianId = `LIB-${session.user.email.split('@')[0]}`;
+  const isAdmin = session.user.role === 'admin';
 
   return (
     <div className="space-y-6">
@@ -22,13 +24,17 @@ export default async function LibrarianResourcesPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">E-Books & Resources</h1>
         <p className="text-muted-foreground">
-          Manage e-books and view all library resources
+          {isAdmin ? 'View and manage all library resources' : 'Manage e-books and view all library resources'}
         </p>
       </div>
 
       {/* Content */}
       <Suspense fallback={<ResourcesLoading />}>
-        <LibrarianResourcesManager librarianId={librarianId} />
+        {isAdmin ? (
+          <ResourcesList showActions role="admin" />
+        ) : (
+          <LibrarianResourcesManager librarianId={librarianId} />
+        )}
       </Suspense>
     </div>
   );

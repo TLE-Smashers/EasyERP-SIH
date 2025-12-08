@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 
 interface ResourcesListProps {
   showActions?: boolean;
-  role?: 'student' | 'librarian' | 'faculty';
+  role?: 'student' | 'librarian' | 'faculty' | 'admin';
 }
 
 export function ResourcesList({ showActions = false, role = 'student' }: ResourcesListProps) {
