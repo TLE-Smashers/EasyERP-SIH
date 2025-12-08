@@ -102,7 +102,7 @@ const getColorForValue = (value: number): string => {
 
 export function WeeklyAttendanceHeatmap({ data = defaultData }: MonthlyAttendanceHeatmapProps) {
   const months = ["Sep", "Oct", "Nov"]
-  
+
   // Group data by month
   const dataByMonth: { [key: string]: HeatmapData[] } = {}
   months.forEach(month => {
@@ -143,7 +143,7 @@ export function WeeklyAttendanceHeatmap({ data = defaultData }: MonthlyAttendanc
                       <div
                         key={`${month}-${date}`}
                         className="w-8 h-8 rounded flex items-center justify-center font-semibold text-xs transition-all hover:scale-110 hover:shadow-lg cursor-pointer relative group"
-                        style={{ 
+                        style={{
                           backgroundColor: getColorForValue(value),
                           color: 'white'
                         }}
