@@ -120,6 +120,11 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
       icon: Bell,
     },
     {
+      title: "Alumni Referrals",
+      url: "/dashboard/admin/referrals",
+      icon: Briefcase,
+    },
+    {
       title: "Settings",
       url: "#",
       icon: Settings,

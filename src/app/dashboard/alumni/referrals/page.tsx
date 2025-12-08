@@ -7,11 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useStudentProfile } from "@/hooks/use-student-profile";
 import { toast } from "sonner";
+import { submitReferral } from "@/actions/alumni/submitReferral";
+import { useSession } from "next-auth/react";
 
 export default function AlumniReferralsPage() {
-    const { student } = useStudentProfile();
+    const { data: session } = useSession();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
 
@@ -40,34 +41,53 @@ export default function AlumniReferralsPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!session?.user?.email || !session?.user?.name) {
+            toast.error("Please login to submit a referral");
+            return;
+        }
+
         setIsSubmitting(true);
 
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
-        setIsSubmitting(false);
-        setSubmitted(true);
-        toast.success("Referral request sent to admin successfully!");
-
-        // Reset form after 3 seconds
-        setTimeout(() => {
-            setSubmitted(false);
-            setFormData({
-                companyName: "",
-                jobTitle: "",
-                jobLocation: "",
-                experienceRequired: "",
-                skillsRequired: "",
-                numberOfPositions: "",
-                salary: "",
-                jobDescription: "",
-                applicationDeadline: "",
-                contactPerson: "",
-                contactEmail: "",
-                contactPhone: "",
-                additionalNotes: "",
+        try {
+            const result = await submitReferral({
+                alumniEmail: session.user.email,
+                alumniName: session.user.name,
+                ...formData,
             });
-        }, 3000);
+
+            if (result.success) {
+                setSubmitted(true);
+                toast.success("Referral request sent to admin successfully!");
+
+                // Reset form after 3 seconds
+                setTimeout(() => {
+                    setSubmitted(false);
+                    setFormData({
+                        companyName: "",
+                        jobTitle: "",
+                        jobLocation: "",
+                        experienceRequired: "",
+                        skillsRequired: "",
+                        numberOfPositions: "",
+                        salary: "",
+                        jobDescription: "",
+                        applicationDeadline: "",
+                        contactPerson: "",
+                        contactEmail: "",
+                        contactPhone: "",
+                        additionalNotes: "",
+                    });
+                }, 3000);
+            } else {
+                toast.error(result.message);
+            }
+        } catch (error) {
+            console.error("Error submitting referral:", error);
+            toast.error("Failed to submit referral. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     if (submitted) {
@@ -258,7 +278,7 @@ export default function AlumniReferralsPage() {
                                         name="contactPerson"
                                         value={formData.contactPerson}
                                         onChange={handleChange}
-                                        placeholder={student?.personalInfo.fullName || "Your name"}
+                                        placeholder={session?.user?.name || "Your name"}
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -269,7 +289,7 @@ export default function AlumniReferralsPage() {
                                         type="email"
                                         value={formData.contactEmail}
                                         onChange={handleChange}
-                                        placeholder={student?.personalInfo.email || "your.email@company.com"}
+                                        placeholder={session?.user?.email || "your.email@company.com"}
                                         required
                                     />
                                 </div>
@@ -281,7 +301,7 @@ export default function AlumniReferralsPage() {
                                         type="tel"
                                         value={formData.contactPhone}
                                         onChange={handleChange}
-                                        placeholder={student?.personalInfo.mobileNumber || "+91 9876543210"}
+                                        placeholder="+91 9876543210"
                                     />
                                 </div>
                             </div>
