@@ -12,6 +12,8 @@ import {
   Users,
   Wallet,
   Bell,
+  Award,
+  Briefcase,
 } from "lucide-react"
 
 export interface NavItem {
@@ -309,10 +311,50 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
 }
 
 /**
+ * Alumni Navigation (for graduated students)
+ * Separate from regular student navigation
+ */
+export const alumniNavigation: NavItem[] = [
+  {
+    title: "Dashboard",
+    url: "/dashboard/alumni",
+    icon: Home,
+  },
+  {
+    title: "My Profile",
+    url: "/dashboard/alumni/profile",
+    icon: Users,
+  },
+  {
+    title: "Alumni Events",
+    url: "/dashboard/alumni/events",
+    icon: Calendar,
+  },
+  {
+    title: "Alumni Directory",
+    url: "/dashboard/alumni/directory",
+    icon: Users,
+  },
+  {
+    title: "Student Referrals",
+    url: "/dashboard/alumni/referrals",
+    icon: Briefcase,
+  },
+]
+
+/**
  * Get navigation items for a specific role
  * @param role - User's role
  * @returns Array of navigation items
  */
 export function getNavigationForRole(role: UserRole): NavItem[] {
   return roleBasedNavigation[role] || []
+}
+
+/**
+ * Get alumni navigation items
+ * @returns Array of alumni navigation items
+ */
+export function getAlumniNavigation(): NavItem[] {
+  return alumniNavigation
 }
