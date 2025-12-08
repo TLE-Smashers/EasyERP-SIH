@@ -12,14 +12,14 @@ import {
   Users,
   Wallet,
   Bell,
-  Award,
-  Briefcase,
+  Share2,
+  LucideIcon,
 } from "lucide-react"
 
 export interface NavItem {
   title: string
   url: string
-  icon: any
+  icon: LucideIcon
   isActive?: boolean
   isSettings?: boolean // Mark items that are settings/system
   items?: {
@@ -40,6 +40,11 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
       title: "Dashboard",
       url: "/dashboard",
       icon: Home,
+    },
+    {
+      title: "Shared Resources",
+      url: "/dashboard/shared-resources",
+      icon: Share2,
     },
     {
       title: "Admission",
@@ -77,6 +82,7 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
         { title: "Pending Requests", url: "/dashboard/library/requests" },
         { title: "Issued Books", url: "/dashboard/library/issues" },
         { title: "Book Catalog", url: "/dashboard/library/books" },
+        { title: "E-Books & Resources", url: "/dashboard/library/resources" },
       ],
     },
     {
@@ -214,6 +220,7 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
         { title: "Pending Requests", url: "/dashboard/library/requests" },
         { title: "Issued Books", url: "/dashboard/library/issues" },
         { title: "Book Catalog", url: "/dashboard/library/books" },
+        { title: "E-Books & Resources", url: "/dashboard/library/resources" },
       ],
     },
   ],
@@ -222,6 +229,11 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
       title: "Dashboard",
       url: "/dashboard/student",
       icon: Home,
+    },
+    {
+      title: "Shared Resources",
+      url: "/dashboard/shared-resources",
+      icon: Share2,
     },
     {
       title: "Exams",
@@ -240,6 +252,7 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
         { title: "Browse Books", url: "/dashboard/student/library" },
         { title: "My Requests", url: "/dashboard/student/library/requests" },
         { title: "My Books", url: "/dashboard/student/library/my-books" },
+        { title: "E-Books & Resources", url: "/dashboard/student/library/resources" },
       ],
     },
     {
@@ -268,6 +281,11 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
       title: "Dashboard",
       url: "/dashboard/faculty",
       icon: Home,
+    },
+    {
+      title: "Shared Resources",
+      url: "/dashboard/shared-resources",
+      icon: Share2,
     },
     {
       title: "My Profile",
@@ -312,40 +330,18 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
       url: "/dashboard/faculty/notices",
       icon: Bell,
     },
+    {
+      title: "Library Resources",
+      url: "#",
+      icon: Library,
+      items: [
+        { title: "Browse Resources", url: "/dashboard/faculty/library/resources" },
+        { title: "Upload Resources", url: "/dashboard/faculty/library/upload" },
+        { title: "My Uploads", url: "/dashboard/faculty/library/my-resources" },
+      ],
+    },
   ],
 }
-
-/**
- * Alumni Navigation (for graduated students)
- * Separate from regular student navigation
- */
-export const alumniNavigation: NavItem[] = [
-  {
-    title: "Dashboard",
-    url: "/dashboard/alumni",
-    icon: Home,
-  },
-  {
-    title: "My Profile",
-    url: "/dashboard/alumni/profile",
-    icon: Users,
-  },
-  {
-    title: "Alumni Events",
-    url: "/dashboard/alumni/events",
-    icon: Calendar,
-  },
-  {
-    title: "Alumni Directory",
-    url: "/dashboard/alumni/directory",
-    icon: Users,
-  },
-  {
-    title: "Student Referrals",
-    url: "/dashboard/alumni/referrals",
-    icon: Briefcase,
-  },
-]
 
 /**
  * Get navigation items for a specific role
