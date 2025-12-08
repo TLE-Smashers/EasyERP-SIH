@@ -11,22 +11,25 @@ export default async function HostelAllocationPage() {
   const applications: HostelApplication[] = response.data || [];
 
   return (
-    <div className="w-full max-w-7xl mx-auto">
-      <PageHeader 
-        title="Hostel Applications" 
-        description="Review and manage all hostel accommodation requests"
-        actions={
-          <Link href="/dashboard/hostel/rooms">
-            <Button variant="outline" className="font-semibold">View Room Allocations</Button>
-          </Link>
-        }
-      />
-      <div className="mb-6">
-        {/* The filter bar is rendered inside HostelApplicationsTableClient */}
-      </div>
-      <div className="rounded-xl border bg-background p-0">
-        <HostelApplicationsTableClient data={applications} />
-      </div>
+    // <div className="w-full max-w-7xl mx-auto">
+    //   <PageHeader 
+    //     title="Hostel Applications" 
+    //     description="Review and manage all hostel accommodation requests"
+    //     actions={
+    //       <Link href="/dashboard/hostel/rooms">
+    //         <Button variant="outline" className="font-semibold">View Room Allocations</Button>
+    //       </Link>
+    //     }
+    //   />
+    //   <div className="mb-6">
+    //     {/* The filter bar is rendered inside HostelApplicationsTableClient */}
+    //   </div>
+    //   <div className="rounded-xl border bg-background p-0">
+    //     <HostelApplicationsTableClient data={applications} />
+    //   </div>
+    // </div>
+    <div>
+      Hostel Allocation Page TODO
     </div>
   );
 }

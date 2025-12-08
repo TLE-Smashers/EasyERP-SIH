@@ -18,10 +18,10 @@ export default async function PaymentsPage() {
       />
 
       {/* Stats Cards */}
-      <PaymentStatsClient payments={payments} />
+      {/* <PaymentStatsClient payments={payments} /> */}
 
       {/* Payments Table */}
-      <PaymentListClient initialPayments={payments} />
+      {/* <PaymentListClient initialPayments={payments} /> */}
     </div>
   );
 }

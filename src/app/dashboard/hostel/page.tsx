@@ -140,91 +140,94 @@ export default async function HostelDashboardPage() {
   }
 
   return (
-    <div className="flex-1 space-y-4">
-      <PageHeader 
-        title="Hostel Dashboard" 
-        description="Manage hostel applications, room allocations, and student accommodations"
-      />
+    // <div className="flex-1 space-y-4">
+    //   <PageHeader 
+    //     title="Hostel Dashboard" 
+    //     description="Manage hostel applications, room allocations, and student accommodations"
+    //   />
 
-      <Suspense fallback={<StatsLoading />}>
-        <StatsCards />
-      </Suspense>
+    //   <Suspense fallback={<StatsLoading />}>
+    //     <StatsCards />
+    //   </Suspense>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2 mb-4">
-        <RoomAllocationTreeMap />
-        <HostelOccupancyGauge />
-      </div>
+    //   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2 mb-4">
+    //     <RoomAllocationTreeMap />
+    //     <HostelOccupancyGauge />
+    //   </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ClipboardList className="h-5 w-5" />
-              View Applications
-            </CardTitle>
-            <CardDescription>
-              View and manage all hostel applications
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/dashboard/hostel/allocation">
-              <Button className="w-full">Open Applications</Button>
-            </Link>
-          </CardContent>
-        </Card>
+    //   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    //     <Card className="hover:shadow-lg transition-shadow">
+    //       <CardHeader>
+    //         <CardTitle className="flex items-center gap-2">
+    //           <ClipboardList className="h-5 w-5" />
+    //           View Applications
+    //         </CardTitle>
+    //         <CardDescription>
+    //           View and manage all hostel applications
+    //         </CardDescription>
+    //       </CardHeader>
+    //       <CardContent>
+    //         <Link href="/dashboard/hostel/allocation">
+    //           <Button className="w-full">Open Applications</Button>
+    //         </Link>
+    //       </CardContent>
+    //     </Card>
 
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <QrCode className="h-5 w-5" />
-              Application Form
-            </CardTitle>
-            <CardDescription>
-              View QR code and hostel form configuration
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/dashboard/hostel/form">
-              <Button className="w-full" variant="outline">
-                View QR Code
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+    //     <Card className="hover:shadow-lg transition-shadow">
+    //       <CardHeader>
+    //         <CardTitle className="flex items-center gap-2">
+    //           <QrCode className="h-5 w-5" />
+    //           Application Form
+    //         </CardTitle>
+    //         <CardDescription>
+    //           View QR code and hostel form configuration
+    //         </CardDescription>
+    //       </CardHeader>
+    //       <CardContent>
+    //         <Link href="/dashboard/hostel/form">
+    //           <Button className="w-full" variant="outline">
+    //             View QR Code
+    //           </Button>
+    //         </Link>
+    //       </CardContent>
+    //     </Card>
 
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bed className="h-5 w-5" />
-              Room Management
-            </CardTitle>
-            <CardDescription>
-              Manage hostel rooms and allocations
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/dashboard/hostel/rooms">
-              <Button className="w-full" variant="outline">
-                Manage Rooms
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+    //     <Card className="hover:shadow-lg transition-shadow">
+    //       <CardHeader>
+    //         <CardTitle className="flex items-center gap-2">
+    //           <Bed className="h-5 w-5" />
+    //           Room Management
+    //         </CardTitle>
+    //         <CardDescription>
+    //           Manage hostel rooms and allocations
+    //         </CardDescription>
+    //       </CardHeader>
+    //       <CardContent>
+    //         <Link href="/dashboard/hostel/rooms">
+    //           <Button className="w-full" variant="outline">
+    //             Manage Rooms
+    //           </Button>
+    //         </Link>
+    //       </CardContent>
+    //     </Card>
+    //   </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>
-            Latest hostel application updates and allocations
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-sm text-muted-foreground">
-            View detailed applications in the Applications section above.
-          </div>
-        </CardContent>
-      </Card>
+    //   <Card>
+    //     <CardHeader>
+    //       <CardTitle>Recent Activity</CardTitle>
+    //       <CardDescription>
+    //         Latest hostel application updates and allocations
+    //       </CardDescription>
+    //     </CardHeader>
+    //     <CardContent>
+    //       <div className="text-sm text-muted-foreground">
+    //         View detailed applications in the Applications section above.
+    //       </div>
+    //     </CardContent>
+    //   </Card>
+    // </div>
+    <div>
+      Hostel Dashboard TODO
     </div>
   );
 }

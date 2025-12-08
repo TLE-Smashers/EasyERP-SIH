@@ -15,6 +15,7 @@ import {
   InstitutionUpdateData,
   SharedEbookUpdateData,
   SharedNoteUpdateData,
+  AccessType,
 } from "@/types/federation";
 
 // Environment variables
@@ -335,32 +336,32 @@ export async function fetchAllSharedNotes(filter?: {
 
     const rows = response.data.values || [];
     let notes = rows.map((row, index) => ({
-      noteId: row[0] || '',
-      title: row[1] || '',
-      subject: row[2] || '',
-      topic: row[3] || '',
-      course: row[4] || '',
-      semester: row[5] || '',
-      branch: row[6] || '',
-      description: row[7] || '',
-      fileUrl: row[8] || '',
-      fileType: row[9] || 'pdf',
-      fileSize: row[10] || '',
-      facultyId: row[11] || '',
-      facultyName: row[12] || '',
-      facultyEmail: row[13] || '',
-      institutionId: row[14] || '',
-      institutionName: row[15] || '',
-      availableFor: row[16] ? (row[16] === 'all' ? ['all'] : row[16].split(',')) : [],
-      accessType: row[17] || 'public',
-      downloads: parseInt(row[18]) || 0,
-      views: parseInt(row[19]) || 0,
-      rating: row[20] ? parseFloat(row[20]) : undefined,
-      uploadDate: row[21] || '',
-      lastUpdated: row[22] || '',
-      tags: row[23] ? row[23].split(',') : [],
-      academicYear: row[24] || '',
-      isActive: row[25] === 'TRUE',
+      noteId: row[0] || '',               // A - noteId
+      title: row[1] || '',                // B - title
+      subject: row[2] || '',              // C - subject
+      topic: row[3] || '',                // D - topic
+      course: row[4] || '',               // E - course
+      semester: row[5] || '',             // F - semester
+      branch: row[6] || '',               // G - branch
+      description: row[7] || '',          // H - description
+      fileUrl: row[8] || '',              // I - fileUrl
+      fileType: (row[9] || 'pdf') as 'pdf' | 'ppt' | 'doc' | 'other',  // J - fileType
+      fileSize: row[10] || '',            // K - fileSize
+      facultyId: row[11] || '',           // L - facultyId
+      facultyName: row[12] || '',         // M - facultyName
+      facultyEmail: row[13] || '',        // N - facultyEmail
+      institutionId: row[14] || '',       // O - institutionId
+      institutionName: row[15] || '',     // P - institutionName
+      availableFor: row[16] ? (row[16] === 'all' ? ['all'] : row[16].split(',')) : [], // Q - availableFor
+      accessType: (row[17] || 'public') as AccessType,  // R - accessType
+      downloads: parseInt(row[18]) || 0,  // S - downloads
+      views: parseInt(row[19]) || 0,      // T - views
+      rating: row[20] ? parseFloat(row[20]) : undefined,  // U - rating
+      uploadDate: row[21] || '',          // V - uploadDate
+      lastUpdated: row[22] || '',         // W - lastUpdated
+      tags: row[23] ? row[23].split(',').map((t: string) => t.trim()) : [],  // X - tags
+      academicYear: row[24] || '',        // Y - academicYear
+      isActive: row[25] === 'TRUE',       // Z - isActive
       rowNumber: index + 2,
     }));
 

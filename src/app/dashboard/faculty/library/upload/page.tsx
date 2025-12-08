@@ -26,7 +26,7 @@ export default async function FacultyUploadPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Upload Resources</h1>
           <p className="text-muted-foreground">
-            Share lecture notes, research papers, and study materials with students
+            Share lecture notes and educational materials with students across institutions
           </p>
         </div>
       </div>
