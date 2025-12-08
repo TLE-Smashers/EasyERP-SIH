@@ -16,7 +16,7 @@ import {
 const ATTENDANCE_SHEET_ID = process.env.NEXT_PUBLIC_ATTENDANCE_SHEET_ID;
 const ATTENDANCE_SHEET_NAME = "FacultyAttendance";
 
-// Column mapping for Attendance sheet (A to Q = 17 columns)
+// Column mapping for Attendance sheet (Extended for Photo + GPS)
 const ATTENDANCE_COLUMNS = {
     ID: 0,                    // A
     FACULTY_ID: 1,            // B
@@ -26,14 +26,25 @@ const ATTENDANCE_COLUMNS = {
     DATE: 5,                  // F
     STATUS: 6,                // G
     CHECK_IN_TIME: 7,         // H
-    CHECK_OUT_TIME: 8,        // I
-    TOTAL_HOURS: 9,           // J
-    REMARKS: 10,              // K
-    MARKED_BY: 11,            // L
-    METHOD: 12,               // M
-    IS_LATE: 13,              // N
-    LATE_BY_MINUTES: 14,      // O
-    TIMESTAMP: 15,            // P
+    CHECK_IN_PHOTO_URL: 8,    // I
+    CHECK_IN_GPS: 9,          // J (JSON)
+    CHECK_IN_DEVICE: 10,      // K (JSON)
+    CHECK_OUT_TIME: 11,       // L
+    CHECK_OUT_PHOTO_URL: 12,  // M
+    CHECK_OUT_GPS: 13,        // N (JSON)
+    CHECK_OUT_DEVICE: 14,     // O (JSON)
+    TOTAL_HOURS: 15,          // P
+    REMARKS: 16,              // Q
+    MARKED_BY: 17,            // R
+    METHOD: 18,               // S
+    IS_LATE: 19,              // T
+    LATE_BY_MINUTES: 20,      // U
+    IS_WITHIN_GEOFENCE: 21,   // V
+    FLAGS: 22,                // W (JSON array)
+    REQUIRES_APPROVAL: 23,    // X
+    APPROVED_BY: 24,          // Y
+    APPROVED_AT: 25,          // Z
+    TIMESTAMP: 26,            // AA
 };
 
 /**
@@ -325,5 +336,83 @@ export async function getAttendanceStats(date: string) {
     } catch (error) {
         console.error("Error getting attendance stats:", error);
         throw new Error("Failed to get attendance statistics");
+    }
+}
+
+/**
+ * Fetch today's attendance records
+ */
+export async function fetchTodaysAttendance(date: string): Promise<FacultyAttendanceRecord[]> {
+    return fetchAttendanceByDate(date);
+}
+
+/**
+ * Fetch pending approval records
+ */
+export async function fetchPendingApprovals(): Promise<FacultyAttendanceRecord[]> {
+    try {
+        const sheets = google.sheets({ version: "v4", auth: await getAuth() });
+        
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: ATTENDANCE_SHEET_ID,
+            range: `${ATTENDANCE_SHEET_NAME}!A2:AA`,
+        });
+
+        const rows = response.data.values || [];
+
+        return rows
+            .map((row, index) => {
+                // Skip if not requiring approval
+                if (row[ATTENDANCE_COLUMNS.REQUIRES_APPROVAL] !== "TRUE") {
+                    return null;
+                }
+
+                return mapRowToRecord(row, index + 2);
+            })
+            .filter((record): record is FacultyAttendanceRecord => record !== null);
+
+    } catch (error) {
+        console.error("Error fetching pending approvals:", error);
+        throw new Error("Failed to fetch pending approvals");
+    }
+}
+
+/**
+ * Update attendance record by row number
+ * Helper for auto-approval system
+ */
+export async function updateAttendanceByRow(
+    rowNumber: number,
+    updates: Partial<FacultyAttendanceRecord>
+): Promise<void> {
+    try {
+        const sheets = google.sheets({ version: "v4", auth: await getAuth() });
+        
+        // Fetch the record to get current data
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: ATTENDANCE_SHEET_ID,
+            range: `${ATTENDANCE_SHEET_NAME}!A${rowNumber}:AA${rowNumber}`,
+        });
+
+        const rows = response.data.values || [];
+        if (rows.length === 0) {
+            throw new Error("Record not found");
+        }
+
+        const currentRecord = mapRowToRecord(rows[0], rowNumber);
+        const updatedRecord = { ...currentRecord, ...updates };
+        const row = transformAttendanceToRow(updatedRecord);
+
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: ATTENDANCE_SHEET_ID,
+            range: `${ATTENDANCE_SHEET_NAME}!A${rowNumber}:AA${rowNumber}`,
+            valueInputOption: "RAW",
+            requestBody: {
+                values: [row],
+            },
+        });
+    } catch (error) {
+        console.error("Error updating attendance by row:", error);
+        throw new Error("Failed to update attendance record");
     }
 }

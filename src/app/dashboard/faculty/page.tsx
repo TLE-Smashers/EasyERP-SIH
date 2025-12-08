@@ -135,6 +135,21 @@ export default function FacultyPage() {
                     </Card>
 
                     <Card
+                        className="cursor-pointer hover:shadow-md transition-shadow border-2 border-primary/20 bg-primary/5"
+                        onClick={() => router.push("/faculty/attendance")}
+                    >
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-base font-medium">📸 Mark My Attendance</CardTitle>
+                            <UserCheck className="h-6 w-6 text-primary" />
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm font-medium text-primary">
+                                Check-in/out with photo + GPS
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card
                         className="cursor-pointer hover:shadow-md transition-shadow"
                         onClick={() => router.push("/dashboard/faculty/my-attendance")}
                     >
@@ -187,6 +202,20 @@ export default function FacultyPage() {
                         <CardDescription>Frequently used features</CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-4 md:grid-cols-3">
+                        <Button
+                            variant="default"
+                            className="h-auto py-4 justify-start bg-primary"
+                            onClick={() => router.push("/faculty/attendance")}
+                        >
+                            <div className="flex items-center gap-3">
+                                <UserCheck className="h-5 w-5" />
+                                <div className="text-left">
+                                    <div className="font-medium">📸 Mark My Attendance</div>
+                                    <div className="text-xs opacity-90">Photo + GPS check-in/out</div>
+                                </div>
+                            </div>
+                        </Button>
+
                         <Button
                             variant="outline"
                             className="h-auto py-4 justify-start"
