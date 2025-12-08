@@ -13,12 +13,13 @@ import {
   Wallet,
   Bell,
   Share2,
+  LucideIcon,
 } from "lucide-react"
 
 export interface NavItem {
   title: string
   url: string
-  icon: any
+  icon: LucideIcon
   isActive?: boolean
   isSettings?: boolean // Mark items that are settings/system
   items?: {
@@ -213,6 +214,7 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
         { title: "Pending Requests", url: "/dashboard/library/requests" },
         { title: "Issued Books", url: "/dashboard/library/issues" },
         { title: "Book Catalog", url: "/dashboard/library/books" },
+        { title: "E-Books & Resources", url: "/dashboard/library/resources" },
       ],
     },
   ],
@@ -244,6 +246,7 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
         { title: "Browse Books", url: "/dashboard/student/library" },
         { title: "My Requests", url: "/dashboard/student/library/requests" },
         { title: "My Books", url: "/dashboard/student/library/my-books" },
+        { title: "E-Books & Resources", url: "/dashboard/student/library/resources" },
       ],
     },
     {
@@ -320,6 +323,16 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
       title: "Notices",
       url: "/dashboard/faculty/notices",
       icon: Bell,
+    },
+    {
+      title: "Library Resources",
+      url: "#",
+      icon: Library,
+      items: [
+        { title: "Browse Resources", url: "/dashboard/faculty/library/resources" },
+        { title: "Upload Resources", url: "/dashboard/faculty/library/upload" },
+        { title: "My Uploads", url: "/dashboard/faculty/library/my-resources" },
+      ],
     },
   ],
 }

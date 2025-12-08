@@ -373,3 +373,129 @@ export interface IssueFilters {
   dateTo?: string;
   searchQuery?: string;          // Search by student name, book title
 }
+
+/**
+ * ========================================
+ * LIBRARY RESOURCES (E-BOOKS & RESOURCES)
+ * ========================================
+ */
+
+// Resource Types
+export type ResourceType = 'ebook' | 'resource';
+
+// Resource Status
+export type ResourceStatus = 'active' | 'archived';
+
+// Resource Category
+export type ResourceCategory =
+  | 'Computer Science'
+  | 'Mathematics'
+  | 'Physics'
+  | 'Chemistry'
+  | 'Biology'
+  | 'Electronics'
+  | 'Mechanical Engineering'
+  | 'Civil Engineering'
+  | 'Electrical Engineering'
+  | 'Business Administration'
+  | 'General Studies'
+  | 'Other';
+
+// File Types
+export type FileType = 'PDF' | 'DOCX' | 'PPTX' | 'XLSX' | 'TXT' | 'EPUB' | 'OTHER';
+
+// Constants
+export const RESOURCE_TYPES: ResourceType[] = ['ebook', 'resource'];
+
+export const RESOURCE_CATEGORIES: ResourceCategory[] = [
+  'Computer Science',
+  'Mathematics',
+  'Physics',
+  'Chemistry',
+  'Biology',
+  'Electronics',
+  'Mechanical Engineering',
+  'Civil Engineering',
+  'Electrical Engineering',
+  'Business Administration',
+  'General Studies',
+  'Other',
+];
+
+export const FILE_TYPES: FileType[] = ['PDF', 'DOCX', 'PPTX', 'XLSX', 'TXT', 'EPUB', 'OTHER'];
+
+/**
+ * Library Resource (E-Book or Faculty Resource)
+ */
+export interface LibraryResource {
+  // Resource Identification
+  resourceId: string;              // RES-001
+  type: ResourceType;              // ebook or resource
+  
+  // Content Information
+  title: string;
+  author: string;
+  category: ResourceCategory;
+  description: string;
+  
+  // File Information
+  fileUrl: string;                 // Google Drive link
+  fileName: string;
+  fileSize: number;                // in bytes
+  fileType: FileType;
+  
+  // Upload Information
+  uploadedBy: string;              // User ID (LIB-001 or FAC-CSE-001)
+  uploadedByName: string;
+  uploadedByRole: 'librarian' | 'faculty';
+  uploadDate: string;
+  
+  // Metadata
+  tags: string[];                  // Array of tags for searching
+  downloadCount: number;
+  status: ResourceStatus;
+  
+  // Row reference
+  rowNumber?: number;
+}
+
+/**
+ * Resource Upload Input
+ */
+export interface ResourceUploadInput {
+  type: ResourceType;
+  title: string;
+  author: string;
+  category: ResourceCategory;
+  description: string;
+  fileUrl: string;
+  fileName: string;
+  fileSize: number;
+  fileType: FileType;
+  tags: string[];
+}
+
+/**
+ * Resource Filters
+ */
+export interface ResourceFilters {
+  type?: ResourceType;
+  category?: ResourceCategory;
+  uploadedByRole?: 'librarian' | 'faculty';
+  status?: ResourceStatus;
+  searchQuery?: string;            // Search by title, author, description, tags
+  tags?: string[];
+}
+
+/**
+ * Resource Statistics
+ */
+export interface ResourceStats {
+  totalResources: number;
+  totalEbooks: number;
+  totalFacultyResources: number;
+  totalDownloads: number;
+  resourcesByCategory: Record<ResourceCategory, number>;
+  topDownloadedResources: LibraryResource[];
+}
+
