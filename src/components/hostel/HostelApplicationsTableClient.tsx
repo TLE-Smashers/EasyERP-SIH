@@ -54,27 +54,33 @@ export function HostelApplicationsTableClient({ data }: Props) {
 
 
   const handleAllocateAll = async (gender: "male" | "female") => {
+    console.log('[CLIENT] Allocate All clicked for gender:', gender);
     setLoading(true);
     setMessage(null);
-    const res = await fetch("/api/hostel/allocate-all", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ gender }),
-    });
-    const result = await res.json();
-    setMessage(`Allocated: ${result.allocated.length}, Not allocated: ${result.notAllocated.length}`);
-    // Update applications state for allocated students
-    setApplications(apps =>
-      apps.map(app =>
-        result.allocated.includes(app.studentId)
-          ? { ...app, status: "allocated" }
-          : app
-      )
-    );
-    setLoading(false);
+    try {
+      const res = await fetch("/api/hostel/allocate-all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gender }),
+      });
+      const result = await res.json();
+      console.log('[CLIENT] Allocate All result:', result);
+      setMessage(`Allocated: ${result.allocated.length}, Not allocated: ${result.notAllocated.length}`);
+      // Refresh the page to get updated room assignments
+      if (result.allocated.length > 0) {
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('[CLIENT] Allocate All error:', error);
+      setMessage('Error during allocation');
+      setLoading(false);
+    }
   };
 
   const handleAllocate = async (studentId: string, gender: "male" | "female") => {
+    console.log('[CLIENT] Starting allocation for studentId:', studentId, 'gender:', gender);
     setRowLoading(l => ({ ...l, [studentId]: "allocate" }));
     setMessage(null);
     try {
@@ -84,22 +90,28 @@ export function HostelApplicationsTableClient({ data }: Props) {
         body: JSON.stringify({ studentId, gender }),
       });
       const result = await res.json();
+      console.log('[CLIENT] Allocation API response:', result);
       setMessage(result.message || (result.success ? "Allocated" : "Allocation failed"));
       if (result.success) {
+        const roomNumber = result.data?.roomNumber || result.roomNumber;
+        console.log('[CLIENT] Updating state with room number:', roomNumber);
         setApplications(apps =>
           apps.map(app =>
             app.studentId === studentId
               ? {
-                  ...app,
-                  status: "allocated",
-                  roomNumber: result.roomNumber,
-                  allocationTimestamp: result.allocationTimestamp || new Date().toISOString()
-                }
+                ...app,
+                status: "allocated",
+                roomNumber: roomNumber,
+                allocationTimestamp: result.allocationTimestamp || new Date().toISOString()
+              }
               : app
           )
         );
+        // Refresh to ensure data is in sync with Google Sheets
+        setTimeout(() => window.location.reload(), 1000);
       }
     } catch (error) {
+      console.error('[CLIENT] Allocation error:', error);
       setMessage((error as Error).message);
     } finally {
       setRowLoading(l => ({ ...l, [studentId]: null }));
@@ -107,15 +119,19 @@ export function HostelApplicationsTableClient({ data }: Props) {
   };
 
   const handleDeallocate = async (studentId: string) => {
+    console.log('[CLIENT] Deallocate button clicked for studentId:', studentId);
     setRowLoading(l => ({ ...l, [studentId]: "deallocate" }));
     setMessage(null);
     try {
+      console.log('[CLIENT] Sending deallocate request to API...');
       const res = await fetch("/api/hostel/deallocate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ studentId }),
       });
+      console.log('[CLIENT] API response status:', res.status);
       const result = await res.json();
+      console.log('[CLIENT] API response data:', result);
       setMessage(result.message || (result.success ? "Deallocated" : "Deallocation failed"));
       if (result.success) {
         setApplications(apps =>
@@ -127,6 +143,7 @@ export function HostelApplicationsTableClient({ data }: Props) {
         );
       }
     } catch (error) {
+      console.error('[CLIENT] Error in handleDeallocate:', error);
       setMessage((error as Error).message);
     } finally {
       setRowLoading(l => ({ ...l, [studentId]: null }));
@@ -134,6 +151,8 @@ export function HostelApplicationsTableClient({ data }: Props) {
   };
 
   const handlePay = (app: HostelApplication) => {
+    console.log('[CLIENT] Opening payment drawer for application:', app);
+    console.log('[CLIENT] Room number:', app.roomNumber);
     setSelectedApplication(app);
     setPaymentDrawerOpen(true);
   };
