@@ -27,6 +27,8 @@ import {
   FileText,
   Cloud,
   Lock,
+  MessageCircle,
+  UserCheck,
 } from "lucide-react"
 
 export interface NavItem {
@@ -66,6 +68,16 @@ export const alumniNavigation: NavItem[] = [
     title: "Alumni Directory",
     url: "/dashboard/alumni/directory",
     icon: UserPlus,
+  },
+  {
+    title: "My Connections",
+    url: "/dashboard/alumni/connections",
+    icon: UserCheck,
+  },
+  {
+    title: "Chat",
+    url: "/dashboard/alumni/chat",
+    icon: MessageCircle,
   },
   {
     title: "Student Referrals",

@@ -403,7 +403,7 @@ export default function StudentDashboardPage() {
 
         {/* Alumni Job Referrals Section */}
         <div className="space-y-4">
-          <JobReferralNotices maxDisplay={3} showHeader={true} />
+          <JobReferralNotices maxDisplay={100} showHeader={true} />
         </div>
       </div>
     </div>

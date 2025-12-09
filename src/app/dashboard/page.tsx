@@ -20,7 +20,6 @@ import { ApplicationTrendChart } from "@/components/dashboard/ApplicationTrendCh
 import { DepartmentPieChart } from "@/components/dashboard/DepartmentPieChart";
 import { ApplicantResourcesCard } from "@/components/dashboard/ApplicantResourcesCard";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import JobReferralNotices from "@/components/job-referral-notices";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -277,9 +276,6 @@ export default async function DashboardPage() {
           })}
         </div>
       </div>
-
-      {/* Alumni Job Referrals Section */}
-      <JobReferralNotices maxDisplay={3} showHeader={true} />
 
       {/* Recent Activity */}
       <Card>
