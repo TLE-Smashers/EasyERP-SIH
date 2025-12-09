@@ -43,8 +43,8 @@ export default function RootLayout({
         <NextAuthProvider>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
-            enableSystem
+            defaultTheme="custom"
+            enableSystem={false}
             disableTransitionOnChange
           >
             {children}
