@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { AdmissionChart } from "@/components/dashboard/AdmissionChart";
 import { ApplicationTrendChart } from "@/components/dashboard/ApplicationTrendChart";
-import { DepartmentPieChart } from "@/components/dashboard/DepartmentPieChart";
 import { ApplicantResourcesCard } from "@/components/dashboard/ApplicantResourcesCard";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 
@@ -184,14 +183,9 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Charts Row 1 */}
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* Charts Row */}
+      <div className="grid gap-4 md:grid-cols-3">
         <ApplicationTrendChart />
-        <DepartmentPieChart />
-      </div>
-
-      {/* Charts Row 2 */}
-      <div className="grid gap-4 md:grid-cols-2">
         <AdmissionChart stats={admissionStats} />
         <ApplicantResourcesCard />
       </div>
