@@ -50,17 +50,17 @@ export function DepartmentPieChart({ data = defaultData }: DepartmentPieChartPro
           </select>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pb-4">
         <div className="flex items-center gap-6">
           <div className="flex-1 relative">
-            <ChartContainer config={chartConfig} className="h-44 w-full">
+            <ChartContainer config={chartConfig} className="h-40 w-full">
               <PieChart>
                 <Pie
                   data={data}
                   cx="50%"
                   cy="50%"
-                  innerRadius={50}
-                  outerRadius={70}
+                  innerRadius={45}
+                  outerRadius={65}
                   paddingAngle={2}
                   dataKey="value"
                 >

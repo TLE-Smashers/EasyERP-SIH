@@ -12,11 +12,6 @@ const PAYMENT_SHEET_ID = process.env.GOOGLE_SHEET_PAYMENT_ID || process.env.GOOG
 const PAYMENT_SHEET_NAME = 'Payments';
 const PAYMENT_SHEET_RANGE = `${PAYMENT_SHEET_NAME}!1:10000`;
 
-console.log('📊 Payment Sheet Config:', {
-  sheetId: PAYMENT_SHEET_ID?.substring(0, 20) + '...',
-  sheetName: PAYMENT_SHEET_NAME,
-});
-
 /**
  * Column Header Keys (used in the spreadsheet)
  * These must match exactly with the header row in Google Sheets
@@ -157,12 +152,6 @@ async function getColumnIndexMapping(forceRefresh = false): Promise<Record<strin
     }
   });
 
-  console.log('📋 Loaded column mapping:', {
-    totalHeaders: headers.length,
-    firstFive: headers.slice(0, 5),
-    hasPaymentId: mapping['paymentId'] !== undefined || mapping['paymentid'] !== undefined,
-  });
-
   columnIndexCache = mapping;
   return mapping;
 }
@@ -263,14 +252,6 @@ async function rowObjectToArray(rowObject: Record<string, any>): Promise<any[]> 
   const mapping = await getColumnIndexMapping();
   const row: any[] = [];
   
-  console.log('🔍 Column mapping:', {
-    totalColumns: Object.keys(mapping).length,
-    sampleKeys: Object.keys(mapping).slice(0, 5),
-    paymentIdIndex: mapping['paymentId'],
-    applicationIdIndex: mapping['applicationId'],
-    razorpayLinkIdIndex: mapping['razorpayLinkId'],
-  });
-  
   // Find the maximum column index
   const maxIndex = Math.max(...Object.values(mapping));
   
@@ -280,22 +261,12 @@ async function rowObjectToArray(rowObject: Record<string, any>): Promise<any[]> 
   }
   
   // Fill in values based on mapping
-  let mappedCount = 0;
-  let unmappedCount = 0;
   for (const [key, value] of Object.entries(rowObject)) {
     const index = mapping[key];
     if (index !== undefined) {
       row[index] = value;
-      mappedCount++;
-    } else {
-      unmappedCount++;
-      if (unmappedCount <= 3) {
-        console.warn(`⚠️ Column key "${key}" not found in mapping`);
-      }
     }
   }
-  
-  console.log(`✅ Mapped ${mappedCount} columns, ${unmappedCount} unmapped, total row length: ${row.length}`);
   
   return row;
 }
@@ -303,11 +274,18 @@ async function rowObjectToArray(rowObject: Record<string, any>): Promise<any[]> 
 /**
  * Parse Google Sheets row to Payment object
  */
-async function rowToPayment(row: any[], rowNumber: number): Promise<Payment> {
-  const mapping = await getColumnIndexMapping();
+/**
+ * Convert Google Sheets row array to Payment object
+ * @param row - Array of cell values
+ * @param rowNumber - Row number in sheet (for reference)
+ * @param mapping - Pre-fetched column index mapping (optional, will fetch if not provided)
+ */
+async function rowToPayment(row: any[], rowNumber: number, mapping?: Record<string, number>): Promise<Payment> {
+  // Use provided mapping or fetch it (cached)
+  const columnMapping = mapping || await getColumnIndexMapping();
   
   const getValue = (key: string) => {
-    const index = mapping[key];
+    const index = columnMapping[key];
     return index !== undefined ? row[index] : undefined;
   };
   
@@ -380,6 +358,10 @@ async function rowToPayment(row: any[], rowNumber: number): Promise<Payment> {
 export async function fetchAllPayments(): Promise<Payment[]> {
   try {
     const sheets = await getSheetsClient();
+    
+    // Fetch column mapping ONCE before processing rows
+    const columnMapping = await getColumnIndexMapping();
+    
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: PAYMENT_SHEET_ID!,
       range: PAYMENT_SHEET_RANGE,
@@ -391,15 +373,14 @@ export async function fetchAllPayments(): Promise<Payment[]> {
     // Skip header row
     const dataRows = rows.slice(1);
     
-    // Parse each row (need to await the async rowToPayment)
+    // Parse each row, passing the pre-fetched mapping
     const payments = await Promise.all(
-      dataRows.map((row, index) => rowToPayment(row as any[], index + 2)) // +2 because row 1 is header
+      dataRows.map((row, index) => rowToPayment(row as any[], index + 2, columnMapping)) // +2 because row 1 is header
     );
     
     // Filter out empty rows
     const validPayments = payments.filter(payment => payment.id);
-    
-    console.log(`✅ Fetched ${validPayments.length} payment records`);
+
     return validPayments;
   } catch (error) {
     console.error('❌ Error fetching payments:', error);

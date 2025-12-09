@@ -155,14 +155,8 @@ export async function getAllFaculty(): Promise<Faculty[]> {
  */
 export async function getFacultyById(facultyId: string): Promise<Faculty | null> {
     try {
-        const allFaculty = await getAllFaculty();
-        console.log("[getFacultyById] Searching for facultyId:", facultyId);
-        console.log("[getFacultyById] Total faculty in sheet:", allFaculty.length);
-        if (allFaculty.length > 0) {
-            console.log("[getFacultyById] First faculty ID sample:", allFaculty[0].facultyId);
-        }
-        const found = allFaculty.find((faculty) => faculty.facultyId === facultyId);
-        console.log("[getFacultyById] Result:", found ? `Found ${found.facultyId}` : "NOT FOUND");
+        const allFaculty = await getFaculty();
+        const found = allFaculty.find(f => f.facultyId === facultyId);
         return found || null;
     } catch (error) {
         console.error(`Error fetching faculty ${facultyId}:`, error);

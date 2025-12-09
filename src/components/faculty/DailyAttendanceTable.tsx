@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select";
 import { FacultyAttendanceRecord, AttendanceStatus } from "@/types/attendance";
 import { format } from "date-fns";
-import { Edit2, Loader2, Users, Clock } from "lucide-react";
+import { Edit2, Loader2, Users, Clock, Download } from "lucide-react";
 import { updateAttendanceRecord } from "@/actions/faculty/attendanceActions";
 import { toast } from "sonner";
 
@@ -48,6 +48,35 @@ export function DailyAttendanceTable({ records, date, activeFilter }: DailyAtten
     const [editingRecord, setEditingRecord] = useState<FacultyAttendanceRecord | null>(null);
     const [newStatus, setNewStatus] = useState<AttendanceStatus>("present");
     const [isUpdating, setIsUpdating] = useState(false);
+
+    const exportToCSV = () => {
+        const headers = ['Faculty ID', 'Faculty Name', 'Date', 'Status', 'Check In Time', 'Method', 'Remarks'];
+        const csvRows = [
+            headers.join(','),
+            ...records.map(record =>
+                [
+                    `"${record.facultyId}"`,
+                    `"${record.facultyName}"`,
+                    `"${format(new Date(record.date), "yyyy-MM-dd")}"`,
+                    `"${record.status}"`,
+                    `"${record.checkInTime || '-'}"`,
+                    `"${record.method}"`,
+                    `"${(record.remarks || '-').replace(/"/g, '""')}"`
+                ].join(',')
+            )
+        ];
+
+        const csvContent = csvRows.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `attendance-${format(new Date(date), "yyyy-MM-dd")}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    };
 
     const getStatusBadge = (status: AttendanceStatus) => {
         const variants: Record<AttendanceStatus, { variant: "default" | "secondary" | "destructive" | "outline"; className?: string }> = {
@@ -120,10 +149,18 @@ export function DailyAttendanceTable({ records, date, activeFilter }: DailyAtten
         <>
             <Card>
                 <CardHeader>
-                    <CardTitle>Daily Attendance</CardTitle>
-                    <CardDescription>
-                        {records.length} faculty member(s) · {format(new Date(date), "MMMM dd, yyyy")}
-                    </CardDescription>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle>Daily Attendance</CardTitle>
+                            <CardDescription>
+                                {records.length} faculty member(s) · {format(new Date(date), "MMMM dd, yyyy")}
+                            </CardDescription>
+                        </div>
+                        <Button onClick={exportToCSV} variant="outline" size="sm">
+                            <Download className="mr-2 h-4 w-4" />
+                            Export CSV
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <div className="rounded-md border">

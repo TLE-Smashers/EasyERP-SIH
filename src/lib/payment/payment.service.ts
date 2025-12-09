@@ -14,7 +14,6 @@ import { sendPaymentConfirmationEmail } from '@/lib/email/mailer';
  */
 export function calculateTotalAmount(feeBreakdown: FeeBreakdown): number {
   let total = 0;
-  console.log('Calculating total amount from fee breakdown:', feeBreakdown);
   if ('roomFee' in feeBreakdown || 'messFee' in feeBreakdown) {
     total =
       (feeBreakdown.roomFee || 0) +
@@ -34,7 +33,6 @@ export function calculateTotalAmount(feeBreakdown: FeeBreakdown): number {
       (feeBreakdown.transactionCharges || 0);
   }
 
-  console.log('Calculated total amount from fee breakdown:', total);
   return total;
 }
 
@@ -155,10 +153,7 @@ export function validateFeeBreakdown(feeBreakdown: FeeBreakdown): { valid: boole
 export async function createPayment(params: CreatePaymentParams): Promise<Payment> {
   try {
     // Calculate total amount
-      // Debug: log the received feeBreakdown
-      console.log('[DEBUG] Received feeBreakdown in createPayment:', params.feeBreakdown);
       const totalAmount = params.totalAmount || calculateTotalAmount(params.feeBreakdown);
-      console.log('[DEBUG] Calculated totalAmount in createPayment:', totalAmount);
     // Convert amount to words
     const amountInWords = params.amountInWords || convertAmountToWords(totalAmount);
     // Validate fee breakdown

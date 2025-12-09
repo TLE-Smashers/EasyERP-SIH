@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/DataTable";
 import { HostelApplication } from "@/types/hostel";
-import { ArrowRight, CheckCircle2, XCircle } from "lucide-react";
+import { ArrowRight, CheckCircle2, XCircle, Download } from "lucide-react";
 
 interface HostelApplicationsTableProps {
   data: HostelApplication[];
@@ -44,6 +44,40 @@ export function HostelApplicationsTable(props: HostelApplicationsTableProps) {
     (Array.isArray(data) ? data : []).filter((app: HostelApplication) => app.gender.toLowerCase() === gender),
     [data, gender]
   );
+
+  const exportToCSV = () => {
+    const headers = ['Student ID', 'Full Name', 'Email', 'Contact', 'Gender', 'Category', 'Entrance %', 'Current Year', 'Session', 'Status', 'Room Number', 'Payment'];
+    const csvRows = [
+      headers.join(','),
+      ...filtered.map(app =>
+        [
+          `"${app.studentId}"`,
+          `"${app.fullName}"`,
+          `"${app.email}"`,
+          `"${app.contactNumber}"`,
+          `"${app.gender}"`,
+          `"${app.category}"`,
+          `"${app.entrancePercentage}"`,
+          `"${app.currentYear}"`,
+          `"${app.session}"`,
+          `"${app.status}"`,
+          `"${app.roomNumber || 'Not allocated'}"`,
+          `"${isPaymentConfirmed(app.paymentConfirmed) ? 'Paid' : 'Pending'}"`
+        ].join(',')
+      )
+    ];
+
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `hostel-applications-${gender}-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
 
   const columns = React.useMemo(() => [
     {
@@ -120,6 +154,13 @@ export function HostelApplicationsTable(props: HostelApplicationsTableProps) {
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">{filtered.length} Application(s)</h3>
+        <Button onClick={exportToCSV} variant="outline" size="sm">
+          <Download className="mr-2 h-4 w-4" />
+          Export CSV
+        </Button>
+      </div>
       <DataTable
         columns={columns}
         data={data}

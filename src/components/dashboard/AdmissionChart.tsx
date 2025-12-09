@@ -63,8 +63,8 @@ export function AdmissionChart({ stats }: AdmissionChartProps) {
         <CardTitle>Application Status Overview</CardTitle>
         <CardDescription>Distribution of application statuses</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="h-44 w-full">
+      <CardContent className="pb-4">
+        <ChartContainer config={chartConfig} className="h-40 w-full">
           <BarChart data={barData}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
             <XAxis 
