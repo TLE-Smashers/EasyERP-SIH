@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { AllStudentsClient } from "./AllStudentsClient";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PageHeader } from "@/components/ui/page-header";
 
 export const metadata = {
   title: "All Students | Easy ERP",
@@ -27,16 +26,8 @@ function LoadingSkeleton() {
 
 export default function AllStudentsPage() {
   return (
-    <div className="container mx-auto">
-      <PageHeader
-        title="All Students"
-        description="View and manage all enrolled students"
-        className="pb-4"
-      />
-
-      <Suspense fallback={<LoadingSkeleton />} >
-        <AllStudentsClient />
-      </Suspense>
-    </div>
+    <Suspense fallback={<LoadingSkeleton />}>
+      <AllStudentsClient />
+    </Suspense>
   );
 }
