@@ -124,6 +124,11 @@ function transformFacultyToRow(faculty: FacultyFormValues, isNew: boolean = fals
  */
 export async function getAllFaculty(): Promise<Faculty[]> {
     try {
+        if (!SPREADSHEET_ID) {
+            console.error('[FACULTY SHEETS] GOOGLE_SHEETS_ID is not set in environment');
+            throw new Error('GOOGLE_SHEETS_ID environment variable is required');
+        }
+
         const sheets = await getSheetsClient();
 
         const response = await sheets.spreadsheets.values.get({
@@ -141,7 +146,7 @@ export async function getAllFaculty(): Promise<Faculty[]> {
         return rows.slice(1).map((row, index) => transformRowToFaculty(row, index + 2));
     } catch (error) {
         console.error("Error fetching faculty from Google Sheets:", error);
-        throw new Error("Failed to fetch faculty data");
+        throw new Error("Failed to fetch faculty data: " + (error as Error).message);
     }
 }
 
