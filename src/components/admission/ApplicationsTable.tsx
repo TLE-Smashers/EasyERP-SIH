@@ -13,7 +13,7 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import { MoreHorizontal, Eye, ArrowRight } from "lucide-react";
+import { MoreHorizontal, Eye, ArrowRight, Download } from "lucide-react";
 import { parseGoogleFormsDate, formatDateForDisplay } from "@/lib/dateUtils";
 
 import {
@@ -209,6 +209,37 @@ export function ApplicationsTable({ data: initialData, onUpdate }: ApplicationsT
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
   const [sortOrder, setSortOrder] = React.useState<'recent' | 'oldest'>('recent');
   const [searchQuery, setSearchQuery] = React.useState<string>('');
+
+  // CSV Export function
+  const exportToCSV = () => {
+    const headers = ['Date', 'Name', 'Email', 'Phone', 'Course', 'Status', 'Docs Verified', 'Payment', 'Locked'];
+    const csvData = data.map(app => [
+      formatDateForDisplay(app.timestamp),
+      app.name,
+      app.email,
+      app.phone,
+      app.course,
+      app.status,
+      app.documentsVerified ? 'Verified' : 'Pending',
+      app.paymentStatus || 'Pending',
+      app.locked ? 'Locked' : 'Open'
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `applications_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   // reference onUpdate to avoid unused variable lint (keeps API stable for callers)
   React.useEffect(() => {
     void onUpdate;
@@ -436,9 +467,14 @@ export function ApplicationsTable({ data: initialData, onUpdate }: ApplicationsT
           </div>
         </div>
 
+        <Button variant="outline" onClick={exportToCSV} className="ml-auto gap-2">
+          <Download className="h-4 w-4" />
+          Export CSV
+        </Button>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
+            <Button variant="outline">
               Columns
             </Button>
           </DropdownMenuTrigger>

@@ -76,7 +76,7 @@ export default function NewApplicationPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background custom:bg-gradient-to-br custom:from-[#f8fafc] custom:to-[#e0f2fe] p-4">
+    <div className="flex flex-col items-center justify-start bg-background custom:bg-gradient-to-br custom:from-[#f8fafc] custom:to-[#e0f2fe] py-8 px-4">
       <Card className="w-full max-w-md custom:shadow-lg custom:shadow-blue-100">
         <CardHeader>
           <CardTitle className="custom:text-[#1e293b] custom:font-semibold">Admission Google Form QR</CardTitle>
@@ -88,7 +88,7 @@ export default function NewApplicationPage() {
           <div className="text-destructive custom:text-red-600 text-sm px-4 pt-2">{error}</div>
         )}
         <form onSubmit={handleGenerate} autoComplete="off">
-          <CardContent className="flex flex-col gap-4">
+          <CardContent className="flex flex-col gap-3 pb-3">
             <Label htmlFor="form-link" className="custom:text-[#1e293b] custom:font-medium">Google Form Link</Label>
             <Input
               id="form-link"
@@ -107,10 +107,10 @@ export default function NewApplicationPage() {
           </CardContent>
         </form>
         {loading ? (
-          <div className="text-center py-8 text-muted-foreground custom:text-[#64748b]">Loading QR link...</div>
+          <div className="text-center py-4 text-muted-foreground custom:text-[#64748b]">Loading QR link...</div>
         ) : showQR && (
-          <CardFooter className="flex flex-col items-center gap-2">
-            <QRCodeSVG value={formUrl} size={180} ref={qrRef} />
+          <CardFooter className="flex flex-col items-center gap-2 pb-4">
+            <QRCodeSVG value={formUrl} size={140} ref={qrRef} />
             <Button variant="outline" onClick={handlePrint} className="mt-2 w-full custom:border-[#cbd5e1] custom:text-[#2563eb] custom:hover:bg-gradient-to-r custom:hover:from-[#eff6ff] custom:hover:to-[#dbeafe] custom:hover:border-[#3b82f6]">Print QR Code</Button>
             <a href={formUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary custom:text-[#3b82f6] custom:hover:text-[#2563eb] underline mt-1">Open Google Form</a>
           </CardFooter>

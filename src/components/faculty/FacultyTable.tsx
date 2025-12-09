@@ -14,7 +14,7 @@ import {
     useReactTable,
     VisibilityState,
 } from "@tanstack/react-table";
-import { MoreHorizontal, Eye, Edit, UserX, UserCheck } from "lucide-react";
+import { MoreHorizontal, Eye, Edit, UserX, UserCheck, Download } from "lucide-react";
 
 import {
     Table,
@@ -96,6 +96,34 @@ export function FacultyTable({ data, onViewDetails, onEdit, onChangeStatus }: Fa
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
     const [rowSelection, setRowSelection] = React.useState({});
     const [globalFilter, setGlobalFilter] = React.useState("");
+
+    // CSV Export function
+    const exportToCSV = () => {
+        const headers = ['Faculty ID', 'Name', 'Email', 'Department', 'Designation', 'Status'];
+        const csvData = data.map(faculty => [
+            faculty.facultyId,
+            faculty.name,
+            faculty.email,
+            faculty.department,
+            faculty.designation.replace(/_/g, ' '),
+            faculty.status
+        ]);
+
+        const csvContent = [
+            headers.join(','),
+            ...csvData.map(row => row.map(cell => `\"${cell}\"`).join(','))
+        ].join('\\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `faculty_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     const columns: ColumnDef<Faculty>[] = [
         {
@@ -292,9 +320,14 @@ export function FacultyTable({ data, onViewDetails, onEdit, onChangeStatus }: Fa
                     </SelectContent>
                 </Select>
 
+                <Button variant="outline" onClick={exportToCSV} className="ml-auto gap-2">
+                    <Download className="h-4 w-4" />
+                    Export CSV
+                </Button>
+
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="ml-auto">
+                        <Button variant="outline">
                             Columns
                         </Button>
                     </DropdownMenuTrigger>
