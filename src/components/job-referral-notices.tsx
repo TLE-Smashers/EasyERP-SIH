@@ -64,61 +64,98 @@ export default function JobReferralNotices({
         <div className="space-y-4">
             {showHeader && (
                 <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">Job Opportunities</h3>
-                    <Badge variant="secondary">{referrals.length} New</Badge>
+                    <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
+                            <Briefcase className="h-5 w-5" />
+                        </div>
+                        <h3 className="text-lg font-semibold">Job Opportunities</h3>
+                    </div>
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200">
+                        {referrals.length} New
+                    </Badge>
                 </div>
             )}
 
-            <div className="space-y-3">
-                {referrals.map((referral) => (
-                    <Card key={referral.id} className="border-l-4 border-l-blue-500">
-                        <CardHeader className="pb-3">
-                            <div className="flex items-start justify-between gap-2">
-                                <div className="flex-1">
-                                    <CardTitle className="text-base">{referral.jobTitle}</CardTitle>
-                                    <p className="text-sm text-muted-foreground mt-1">
-                                        {referral.companyName}
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {referrals.map((referral, index) => {
+                    const colors = [
+                        { solid: "#3b82f6", bg: "bg-blue-100", text: "text-blue-600", border: "border-blue-500" },
+                        { solid: "#8b5cf6", bg: "bg-purple-100", text: "text-purple-600", border: "border-purple-500" },
+                        { solid: "#10b981", bg: "bg-green-100", text: "text-green-600", border: "border-green-500" },
+                        { solid: "#f59e0b", bg: "bg-orange-100", text: "text-orange-600", border: "border-orange-500" },
+                        { solid: "#ec4899", bg: "bg-pink-100", text: "text-pink-600", border: "border-pink-500" },
+                        { solid: "#06b6d4", bg: "bg-cyan-100", text: "text-cyan-600", border: "border-cyan-500" },
+                    ];
+                    const colorScheme = colors[index % colors.length];
+
+                    return (
+                        <Card key={referral.id} className={`group hover:shadow-xl transition-all duration-300 overflow-hidden border-t-4 ${colorScheme.border} shadow-md`}>
+                            {/* Removed gradient header, using border-t-4 instead */}
+                            
+                            <CardHeader className="pb-3">
+                                <div className="flex items-start gap-3">
+                                    <div className={`p-3 rounded-xl ${colorScheme.bg} ${colorScheme.text} shrink-0 group-hover:scale-110 transition-transform`}>
+                                        <Building2 className="h-6 w-6" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <CardTitle className="text-lg font-bold line-clamp-1 mb-1">
+                                            {referral.jobTitle}
+                                        </CardTitle>
+                                        <p className="text-base text-muted-foreground font-medium">
+                                            {referral.companyName}
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardHeader>
+
+                            <CardContent className="space-y-3">
+                                <div className="space-y-2.5">
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <div className={`p-2 rounded-md ${colorScheme.bg} ${colorScheme.text}`}>
+                                            <MapPin className="h-4 w-4" />
+                                        </div>
+                                        <span className="text-sm font-medium">{referral.jobLocation}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <div className={`p-2 rounded-md ${colorScheme.bg} ${colorScheme.text}`}>
+                                            <Briefcase className="h-4 w-4" />
+                                        </div>
+                                        <span className="text-sm font-medium">{referral.experienceRequired}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <div className={`p-2 rounded-md ${colorScheme.bg} ${colorScheme.text}`}>
+                                            <Calendar className="h-4 w-4" />
+                                        </div>
+                                        <span className="text-sm font-medium">{referral.applicationDeadline}</span>
+                                    </div>
+                                </div>
+
+                                {referral.jobDescription && (
+                                    <p className="text-sm text-muted-foreground line-clamp-2 pt-2 border-t">
+                                        {referral.jobDescription}
+                                    </p>
+                                )}
+
+                                <div className="flex flex-col gap-2 pt-2">
+                                    <Button 
+                                        size="default" 
+                                        className="w-full hover:opacity-90 transition-opacity text-white border-0"
+                                        style={{ backgroundColor: colorScheme.solid }}
+                                        asChild
+                                    >
+                                        <a href={`mailto:${referral.contactEmail}`}>
+                                            <ExternalLink className="h-4 w-4 mr-2" />
+                                            Apply Now
+                                        </a>
+                                    </Button>
+                                    <p className="text-sm text-center text-muted-foreground font-medium">
+                                        via {referral.alumniName}
                                     </p>
                                 </div>
-                                <Badge variant="default" className="shrink-0">Alumni Referral</Badge>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            <div className="grid gap-2 text-sm">
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    <MapPin className="h-4 w-4" />
-                                    <span>{referral.jobLocation}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    <Briefcase className="h-4 w-4" />
-                                    <span>Experience: {referral.experienceRequired}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    <Calendar className="h-4 w-4" />
-                                    <span>Deadline: {referral.applicationDeadline}</span>
-                                </div>
-                            </div>
-
-                            {referral.jobDescription && (
-                                <p className="text-sm text-muted-foreground line-clamp-2">
-                                    {referral.jobDescription}
-                                </p>
-                            )}
-
-                            <div className="flex items-center justify-between pt-2 border-t">
-                                <p className="text-xs text-muted-foreground">
-                                    Referred by {referral.alumniName}
-                                </p>
-                                <Button size="sm" variant="outline" asChild>
-                                    <a href={`mailto:${referral.contactEmail}`}>
-                                        <ExternalLink className="h-3 w-3 mr-1" />
-                                        Apply
-                                    </a>
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
+                            </CardContent>
+                        </Card>
+                    );
+                })}
             </div>
         </div>
     );

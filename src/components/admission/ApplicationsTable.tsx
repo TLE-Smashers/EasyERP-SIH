@@ -13,25 +13,7 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import {
-  DndContext,
-  KeyboardSensor,
-  MouseSensor,
-  TouchSensor,
-  closestCenter,
-  type DragEndEvent,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import {
-  arrayMove,
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, MoreHorizontal, Eye, ArrowRight } from "lucide-react";
+import { MoreHorizontal, Eye, ArrowRight } from "lucide-react";
 import { parseGoogleFormsDate, formatDateForDisplay } from "@/lib/dateUtils";
 
 import {
@@ -82,26 +64,13 @@ interface DraggableRowProps {
 
 function DraggableRow({ row, children }: DraggableRowProps) {
   const router = useRouter();
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({
-      id: row.id,
-    });
-
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    position: "relative",
-    zIndex: isDragging ? 1 : 0,
-  };
 
   const handleRowClick = (e: React.MouseEvent) => {
     // Don't navigate if clicking on interactive elements
     const target = e.target as HTMLElement;
     if (
       target.closest('button') ||
-      target.closest('[role="checkbox"]') ||
-      target.closest('.cursor-grab')
+      target.closest('[role="checkbox"]')
     ) {
       return;
     }
@@ -115,8 +84,6 @@ function DraggableRow({ row, children }: DraggableRowProps) {
 
   return (
     <TableRow
-      ref={setNodeRef}
-      style={style}
       onClick={handleRowClick}
       className="cursor-pointer hover:bg-muted/50 transition-colors"
     >
@@ -139,7 +106,7 @@ function TableCellViewer({ application }: TableCellViewerProps) {
       onClick={() =>
         router.push(`/dashboard/admission/application-form-preview/${application.id}`)
       }
-      className="h-8 gap-2"
+      className="h-8 gap-2 hover:bg-blue-100 hover:text-blue-700 transition-colors"
     >
       <Eye className="h-4 w-4" />
       View Full Application
@@ -148,31 +115,31 @@ function TableCellViewer({ application }: TableCellViewerProps) {
 }
 
 function getStatusBadge(status: string) {
-  const config: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-    pending: { label: "🟡 Pending", variant: "secondary" },
-    documents_verified: { label: "🟢 Docs Verified", variant: "default" },
-    payment_pending: { label: "🟠 Payment Pending", variant: "outline" },
-    paid: { label: "💵 Paid", variant: "default" },
-    completed: { label: "✅ Completed", variant: "default" },
-    rejected: { label: "🔴 Rejected", variant: "destructive" },
+  const config: Record<string, { label: string; className: string }> = {
+    pending: { label: "Pending", className: "bg-yellow-100 text-yellow-700 hover:bg-yellow-100" },
+    documents_verified: { label: "Docs Verified", className: "bg-green-100 text-green-700 hover:bg-green-100" },
+    payment_pending: { label: "Payment Pending", className: "bg-orange-100 text-orange-700 hover:bg-orange-100" },
+    paid: { label: "Paid", className: "bg-green-100 text-green-700 hover:bg-green-100" },
+    completed: { label: "Completed", className: "bg-emerald-100 text-emerald-700 hover:bg-emerald-100" },
+    rejected: { label: "Rejected", className: "bg-red-100 text-red-700 hover:bg-red-100" },
   };
 
-  const item = config[status] || { label: status, variant: "outline" as const };
-  return <Badge variant={item.variant} className="whitespace-nowrap inline-flex items-center">{item.label}</Badge>;
+  const item = config[status] || { label: status, className: "bg-gray-100 text-gray-700 hover:bg-gray-100" };
+  return <Badge variant="secondary" className={`whitespace-nowrap inline-flex items-center rounded-full px-3 py-1 ${item.className}`}>{item.label}</Badge>;
 }
 
 function getPaymentBadge(status: "pending" | "done") {
   if (status === "done") {
     return (
-      <Badge variant="default" className="whitespace-nowrap inline-flex items-center bg-green-600">
-        ✅ Done
+      <Badge variant="secondary" className="whitespace-nowrap inline-flex items-center rounded-full px-3 py-1 bg-green-100 text-green-700 hover:bg-green-100">
+        Done
       </Badge>
     );
   }
   // pending
   return (
-    <Badge variant="secondary" className="whitespace-nowrap inline-flex items-center bg-amber-400 text-amber-900">
-      🟡 Pending
+    <Badge variant="secondary" className="whitespace-nowrap inline-flex items-center rounded-full px-3 py-1 bg-yellow-100 text-yellow-700 hover:bg-yellow-100">
+      Pending
     </Badge>
   );
 }
@@ -290,19 +257,6 @@ export function ApplicationsTable({ data: initialData, onUpdate }: ApplicationsT
 
   const columns: ColumnDef<Application>[] = [
     {
-      id: "drag",
-      header: "",
-      cell: () => {
-        // Avoid calling hooks inside a cell renderer; the drag handle is purely visual here.
-        return (
-          <div className="cursor-grab active:cursor-grabbing">
-            <GripVertical className="h-5 w-5 text-muted-foreground" />
-          </div>
-        );
-      },
-      size: 40,
-    },
-    {
       accessorKey: "timestamp",
       header: "Date",
       cell: ({ row }) => {
@@ -343,12 +297,12 @@ export function ApplicationsTable({ data: initialData, onUpdate }: ApplicationsT
         return (
           <div className="py-1">
             {verified ? (
-              <Badge variant="default" className="gap-1">
-                <span className="text-xs">✓</span> Verified
+              <Badge variant="secondary" className="rounded-full px-3 py-1 bg-green-100 text-green-700 hover:bg-green-100">
+                Verified
               </Badge>
             ) : (
-              <Badge variant="secondary" className="gap-1">
-                <span className="text-xs">○</span> Pending
+              <Badge variant="secondary" className="rounded-full px-3 py-1 bg-gray-100 text-gray-700 hover:bg-gray-100">
+                Pending
               </Badge>
             )}
           </div>
@@ -382,12 +336,12 @@ export function ApplicationsTable({ data: initialData, onUpdate }: ApplicationsT
         return (
           <div className="py-1">
             {locked ? (
-              <Badge variant="default" className="gap-1 bg-green-600">
-                <span className="text-xs">🔒</span> Locked
+              <Badge variant="secondary" className="rounded-full px-3 py-1 bg-green-100 text-green-700 hover:bg-green-100">
+                Locked
               </Badge>
             ) : (
-              <Badge variant="outline" className="gap-1">
-                <span className="text-xs">○</span> Open
+              <Badge variant="secondary" className="rounded-full px-3 py-1 bg-red-100 text-red-700 hover:bg-red-100">
+                Open
               </Badge>
             )}
           </div>
@@ -404,12 +358,6 @@ export function ApplicationsTable({ data: initialData, onUpdate }: ApplicationsT
     },
   ];
 
-  const sensors = useSensors(
-    useSensor(MouseSensor, {}),
-    useSensor(TouchSensor, {}),
-    useSensor(KeyboardSensor, {})
-  );
-
   const table = useReactTable({
     data,
     columns,
@@ -424,19 +372,6 @@ export function ApplicationsTable({ data: initialData, onUpdate }: ApplicationsT
     },
     getRowId: (row) => row.id,
   });
-
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-      setData((data) => {
-        const oldIndex = data.findIndex((item) => item.id === active.id);
-        const newIndex = data.findIndex((item) => item.id === over.id);
-        return arrayMove(data, oldIndex, newIndex);
-      });
-    }
-  }
-
-  const dataIds = React.useMemo(() => data.map((item) => item.id), [data]);
 
   return (
     <div className="space-y-4">
@@ -529,54 +464,45 @@ export function ApplicationsTable({ data: initialData, onUpdate }: ApplicationsT
 
       <div className="overflow-x-auto">
         <div className="rounded-md border min-w-max mx-4">
-          <DndContext
-            sensors={sensors}
-            onDragEnd={handleDragEnd}
-            collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis]}
-          >
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <TableHead key={header.id}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                        </TableHead>
-                      );
-                    })}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                <SortableContext items={dataIds} strategy={verticalListSortingStrategy}>
-                  {table.getRowModel().rows?.length ? (
-                    table.getRowModel().rows.map((row) => (
-                      <DraggableRow key={row.id} row={row}>
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </TableCell>
-                        ))}
-                      </DraggableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={columns.length} className="h-24 text-center">
-                        No applications found.
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                      </TableHead>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <DraggableRow key={row.id} row={row}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
-                    </TableRow>
-                  )}
-                </SortableContext>
-              </TableBody>
-            </Table>
-          </DndContext>
+                    ))}
+                  </DraggableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="h-24 text-center">
+                    No applications found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
 

@@ -134,49 +134,50 @@ export default async function DashboardPage() {
       />
 
       {/* Quick Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-5">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-base font-medium">Total Applications</CardTitle>
-            <GraduationCap className="h-6 w-6 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-lg font-semibold">Total Applications</CardTitle>
+            <GraduationCap className="h-7 w-7 text-muted-foreground" />
           </CardHeader>
           <CardContent className="pb-4">
-            <div className="text-3xl font-bold">{admissionStats.total}</div>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              <span className="text-green-600">+{admissionStats.pending}</span> pending review
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-base font-medium">Verified</CardTitle>
-            <Users className="h-6 w-6 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="pb-4">
-            <div className="text-3xl font-bold">{admissionStats.verified}</div>
-            <p className="text-sm text-muted-foreground mt-0.5">Documents verified</p>
+            <div className="text-4xl font-bold">{admissionStats.total}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-base font-medium">Payment Pending</CardTitle>
-            <Wallet className="h-6 w-6 text-muted-foreground" />
+            <CardTitle className="text-lg font-semibold">Pending Review</CardTitle>
+            <TrendingUpIcon className="h-7 w-7 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{admissionStats.paymentPending}</div>
-            <p className="text-sm text-muted-foreground mt-1">Awaiting payment</p>
+          <CardContent className="pb-4">
+            <div className="text-4xl font-bold">{admissionStats.pending}</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-base font-medium">Completed</CardTitle>
-            <Library className="h-6 w-6 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-lg font-semibold">Verified</CardTitle>
+            <Users className="h-7 w-7 text-muted-foreground" />
           </CardHeader>
           <CardContent className="pb-4">
-            <div className="text-3xl font-bold">{admissionStats.completed}</div>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              <span className="text-red-600">{admissionStats.rejected}</span> rejected
-            </p>
+            <div className="text-4xl font-bold">{admissionStats.verified}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-lg font-semibold">Payment Pending</CardTitle>
+            <Wallet className="h-7 w-7 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="pb-4">
+            <div className="text-4xl font-bold">{admissionStats.paymentPending}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-lg font-semibold">Completed</CardTitle>
+            <Library className="h-7 w-7 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="pb-4">
+            <div className="text-4xl font-bold">{admissionStats.completed}</div>
           </CardContent>
         </Card>
       </div>
@@ -188,59 +189,8 @@ export default async function DashboardPage() {
       </div>
 
       {/* Charts Row 2 */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <AdmissionChart stats={admissionStats} />
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Module Usage</CardTitle>
-            <CardDescription>Activity across different modules</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-center justify-between text-sm mb-2">
-                  <span>Admission</span>
-                  <span className="font-medium">{admissionStats.total}</span>
-                </div>
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-blue-500 to-blue-600"
-                    style={{ width: `${admissionStats.total > 0 ? Math.min((admissionStats.total / (admissionStats.total + 10)) * 100, 100) : 0}%` }}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center justify-between text-sm mb-2">
-                  <span>Library</span>
-                  <span className="font-medium">0</span>
-                </div>
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-orange-500 to-orange-600" style={{ width: "0%" }} />
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center justify-between text-sm mb-2">
-                  <span>Accounts</span>
-                  <span className="font-medium">0</span>
-                </div>
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-green-500 to-green-600" style={{ width: "0%" }} />
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center justify-between text-sm mb-2">
-                  <span>Hostel</span>
-                  <span className="font-medium">0</span>
-                </div>
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-purple-500 to-purple-600" style={{ width: "0%" }} />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         <ApplicantResourcesCard />
       </div>
 
@@ -297,9 +247,6 @@ export default async function DashboardPage() {
                 </div>
               </div>
               <span className="text-xs text-muted-foreground">Just now</span>
-            </div>
-            <div className="text-center py-8 text-muted-foreground">
-              <p className="text-sm">No recent activity</p>
             </div>
           </div>
         </CardContent>

@@ -88,7 +88,6 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
       icon: GraduationCap,
       items: [
         { title: "Applications", url: "/dashboard/admission/applications" },
-        { title: "New Application", url: "/dashboard/admission/new" },
       ],
     },
     {
@@ -190,7 +189,6 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
       icon: GraduationCap,
       items: [
         { title: "Applications", url: "/dashboard/admission/applications" },
-        { title: "New Application", url: "/dashboard/admission/new" },
       ],
     },
   ],
