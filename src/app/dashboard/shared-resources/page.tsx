@@ -8,19 +8,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BookOpen, FileText, Download, Eye, Building2, Star } from "lucide-react";
+import { BookOpen, FileText, Download, Eye, Building2, Star, Library } from "lucide-react";
 import { getSharedEbooks, getSharedNotes } from "@/actions/federation/getSharedResources";
+import { fetchVideos } from "@/actions/videos/videoActions";
 import { downloadResource } from "@/actions/federation/downloadResource";
 
 async function SharedResourcesContent() {
   // Fetch shared resources
-  const [ebooksResult, notesResult] = await Promise.all([
+  const [ebooksResult, notesResult, videosResult] = await Promise.all([
     getSharedEbooks(),
     getSharedNotes(),
+    fetchVideos(),
   ]);
 
   const ebooks = ebooksResult.success ? ebooksResult.ebooks : [];
   const notes = notesResult.success ? notesResult.notes : [];
+  const videos = videosResult.success ? videosResult.videos : [];
 
   return (
     <div className="space-y-6">
@@ -28,12 +31,12 @@ async function SharedResourcesContent() {
       <div>
         <h1 className="text-3xl font-bold">Shared Resources</h1>
         <p className="text-muted-foreground mt-2">
-          Browse ebooks and notes shared by partner institutions
+          Browse ebooks, notes, and resources shared by partner institutions
         </p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg font-semibold">Total Ebooks</CardTitle>
@@ -49,14 +52,22 @@ async function SharedResourcesContent() {
           <CardContent>
             <div className="text-4xl font-bold">{notes.length}</div>
           </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold">Shared Videos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-4xl font-bold">{videos.length}</div>
+          </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg font-semibold">Total Institutions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold">
-              {new Set([...ebooks.map(e => e.institutionId), ...notes.map(n => n.institutionId)]).size}
+        </CardHeader>
+        <CardContent>
+          <div className="text-4xl font-bold">
+            {new Set([...ebooks.map(e => e.institutionId), ...notes.map(n => n.institutionId)]).size}
             </div>
           </CardContent>
         </Card>
@@ -72,6 +83,10 @@ async function SharedResourcesContent() {
           <TabsTrigger value="notes">
             <FileText className="w-4 h-4 mr-2" />
             Notes ({notes.length})
+          </TabsTrigger>
+          <TabsTrigger value="library">
+            <Library className="w-4 h-4 mr-2" />
+            Videos ({videos.length})
           </TabsTrigger>
         </TabsList>
 
@@ -257,6 +272,98 @@ async function SharedResourcesContent() {
                           Download
                         </Button>
                       </form>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Library Resources Tab */}
+        <TabsContent value="library" className="space-y-4">
+          {videos.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-10">
+                <Library className="w-12 h-12 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No videos available yet</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {videos.map((video: any) => (
+                <Card key={video.videoId} className="flex flex-col">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg line-clamp-2">
+                          {video.title}
+                        </CardTitle>
+                        <CardDescription className="mt-1">
+                          by {video.author}
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="flex-1 space-y-3">
+                    {/* Category Badge */}
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="default">Video</Badge>
+                      <Badge variant="outline">{video.category}</Badge>
+                    </div>
+
+                    {/* Description */}
+                    {video.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {video.description}
+                      </p>
+                    )}
+
+                    {/* Uploader Info */}
+                    <div className="text-sm">
+                      <span className="text-muted-foreground">Uploaded by:</span>{" "}
+                      <span className="font-medium">{video.uploadedByName}</span>
+                      <Badge variant="outline" className="ml-2 text-xs">
+                        {video.uploadedByRole}
+                      </Badge>
+                    </div>
+
+                    {/* Tags */}
+                    {video.tags && video.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {video.tags.slice(0, 3).map((tag: string, idx: number) => (
+                          <Badge key={idx} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                        {video.tags.length > 3 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{video.tags.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Stats */}
+                    <div className="flex items-center gap-4 text-sm">
+                      <div className="flex items-center">
+                        <Eye className="w-4 h-4 mr-1" />
+                        {video.viewCount} views
+                      </div>
+                    </div>
+
+                    {/* Action Button */}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="default"
+                        className="flex-1"
+                        asChild
+                      >
+                        <a href={video.fileUrl} target="_blank" rel="noopener noreferrer">
+                          <Eye className="w-4 h-4 mr-2" />
+                          Watch Video
+                        </a>
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>

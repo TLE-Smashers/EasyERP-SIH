@@ -1,6 +1,6 @@
 /**
  * Get Shared Resources Action
- * Fetches ebooks and notes from federation
+ * Fetches ebooks, notes, and resources from federation
  */
 
 "use server";
@@ -8,6 +8,7 @@
 import { 
   fetchAllSharedEbooks, 
   fetchAllSharedNotes,
+  fetchAllSharedResources,
   searchResources,
 } from "@/lib/google/sheets.federation";
 import { SharedResourceFilter } from "@/types/federation";
@@ -87,6 +88,33 @@ export async function searchSharedResources(query: string) {
       totalEbooks: 0,
       totalNotes: 0,
       error: error instanceof Error ? error.message : 'Failed to search resources',
+    };
+  }
+}
+
+/**
+ * Get all shared resources (videos, lectures, research papers, etc.)
+ */
+export async function getAllSharedResources(filter?: {
+  institutionId?: string;
+  type?: string;
+  category?: string;
+  searchQuery?: string;
+}) {
+  try {
+    const resources = await fetchAllSharedResources(filter);
+    return {
+      success: true,
+      resources,
+      total: resources.length,
+    };
+  } catch (error) {
+    console.error('Error getting shared resources:', error);
+    return {
+      success: false,
+      resources: [],
+      total: 0,
+      error: error instanceof Error ? error.message : 'Failed to fetch shared resources',
     };
   }
 }

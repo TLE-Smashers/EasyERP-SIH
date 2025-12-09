@@ -8,7 +8,7 @@
 import { google } from "googleapis";
 import { LeaveRequest, LeaveStatus, LeaveType, LeaveDuration, LeaveBalance } from "@/types/leave";
 
-const LEAVE_SHEET_ID = process.env.NEXT_PUBLIC_LEAVE_SHEET_ID;
+const LEAVE_SHEET_ID = process.env.NEXT_PUBLIC_LEAVE_SHEET_ID || process.env.GOOGLE_SHEETS_ID;
 const LEAVE_SHEET_NAME = "LeaveRequests";
 const BALANCE_SHEET_NAME = "LeaveBalance";
 
@@ -58,10 +58,17 @@ const BALANCE_COLUMNS = {
  * Get authenticated Google Sheets client
  */
 async function getSheetsClient() {
+    const clientEmail = process.env.GOOGLE_CLIENT_EMAIL || process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+    const privateKey = process.env.GOOGLE_PRIVATE_KEY;
+
+    if (!clientEmail || !privateKey) {
+        throw new Error("Google Sheets credentials are not configured. Please check GOOGLE_SERVICE_ACCOUNT_EMAIL and GOOGLE_PRIVATE_KEY in .env.local");
+    }
+
     const auth = new google.auth.GoogleAuth({
         credentials: {
-            client_email: process.env.GOOGLE_CLIENT_EMAIL,
-            private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+            client_email: clientEmail,
+            private_key: privateKey.replace(/\\n/g, "\n"),
         },
         scopes: ["https://www.googleapis.com/auth/spreadsheets"],
     });
@@ -130,6 +137,11 @@ function transformLeaveRequestToRow(leave: Partial<LeaveRequest>): any[] {
  */
 export async function fetchAllLeaveRequests(): Promise<LeaveRequest[]> {
     try {
+        if (!LEAVE_SHEET_ID) {
+            console.error("LEAVE_SHEET_ID is not configured");
+            return [];
+        }
+
         const sheets = await getSheetsClient();
 
         const response = await sheets.spreadsheets.values.get({
@@ -139,9 +151,12 @@ export async function fetchAllLeaveRequests(): Promise<LeaveRequest[]> {
 
         const rows = response.data.values || [];
         return rows.map((row, index) => transformRowToLeaveRequest(row, index));
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error fetching leave requests:", error);
-        throw new Error("Failed to fetch leave requests");
+        if (error.message?.includes("Unable to parse range")) {
+            console.error("Sheet 'LeaveRequests' does not exist. Please run setup script.");
+        }
+        return [];
     }
 }
 
@@ -166,6 +181,11 @@ export async function fetchLeaveRequestById(leaveId: string): Promise<LeaveReque
  */
 export async function addLeaveRequest(leave: Partial<LeaveRequest>): Promise<void> {
     try {
+        if (!LEAVE_SHEET_ID) {
+            console.error("LEAVE_SHEET_ID is not configured");
+            throw new Error("Leave management is not configured. Please contact administrator.");
+        }
+
         const sheets = await getSheetsClient();
 
         // Generate unique ID
@@ -178,6 +198,9 @@ export async function addLeaveRequest(leave: Partial<LeaveRequest>): Promise<voi
 
         const row = transformLeaveRequestToRow(newLeave);
 
+        console.log("Adding leave request to sheet:", LEAVE_SHEET_ID);
+        console.log("Leave data:", newLeave);
+
         await sheets.spreadsheets.values.append({
             spreadsheetId: LEAVE_SHEET_ID,
             range: `${LEAVE_SHEET_NAME}!A:R`,
@@ -186,9 +209,16 @@ export async function addLeaveRequest(leave: Partial<LeaveRequest>): Promise<voi
                 values: [row],
             },
         });
-    } catch (error) {
+
+        console.log("Leave request added successfully");
+    } catch (error: any) {
         console.error("Error adding leave request:", error);
-        throw new Error("Failed to add leave request");
+        console.error("Error details:", {
+            message: error.message,
+            code: error.code,
+            status: error.status,
+        });
+        throw new Error(error.message || "Failed to add leave request");
     }
 }
 
@@ -247,8 +277,16 @@ export async function cancelLeaveRequest(leaveId: string): Promise<void> {
 /**
  * Fetch leave balance for faculty
  */
+/**
+ * Fetch leave balance for faculty with real-time calculation
+ */
 export async function fetchLeaveBalance(facultyId: string, academicYear: string): Promise<LeaveBalance | null> {
     try {
+        if (!LEAVE_SHEET_ID) {
+            console.error("LEAVE_SHEET_ID is not configured");
+            return null;
+        }
+
         const sheets = await getSheetsClient();
 
         const response = await sheets.spreadsheets.values.get({
@@ -264,33 +302,64 @@ export async function fetchLeaveBalance(facultyId: string, academicYear: string)
 
         if (!balanceRow) return null;
 
+        // Fetch all approved leaves for this faculty
+        const allLeaves = await fetchAllLeaveRequests();
+        const approvedLeaves = allLeaves.filter(
+            leave => leave.facultyId === facultyId && leave.status === "approved"
+        );
+
+        // Calculate used leaves by type
+        const casualUsed = approvedLeaves
+            .filter(leave => leave.leaveType === "casual")
+            .reduce((sum, leave) => sum + leave.totalDays, 0);
+
+        const sickUsed = approvedLeaves
+            .filter(leave => leave.leaveType === "sick")
+            .reduce((sum, leave) => sum + leave.totalDays, 0);
+
+        // All other leave types (earned, maternity, paternity, compensatory, unpaid, other) count as earned leave
+        const earnedUsed = approvedLeaves
+            .filter(leave => leave.leaveType !== "casual" && leave.leaveType !== "sick")
+            .reduce((sum, leave) => sum + leave.totalDays, 0);
+
+        const casualAllocated = parseFloat(balanceRow[BALANCE_COLUMNS.CASUAL_ALLOCATED] || "0");
+        const sickAllocated = parseFloat(balanceRow[BALANCE_COLUMNS.SICK_ALLOCATED] || "0");
+        const earnedAllocated = parseFloat(balanceRow[BALANCE_COLUMNS.EARNED_ALLOCATED] || "0");
+
+        const totalAllocated = casualAllocated + sickAllocated + earnedAllocated;
+        const totalUsed = casualUsed + sickUsed + earnedUsed;
+        const totalRemaining = totalAllocated - totalUsed;
+
         return {
             facultyId: balanceRow[BALANCE_COLUMNS.FACULTY_ID],
             employeeId: balanceRow[BALANCE_COLUMNS.EMPLOYEE_ID],
             academicYear: balanceRow[BALANCE_COLUMNS.ACADEMIC_YEAR],
             casualLeave: {
-                allocated: parseFloat(balanceRow[BALANCE_COLUMNS.CASUAL_ALLOCATED] || "0"),
-                used: parseFloat(balanceRow[BALANCE_COLUMNS.CASUAL_USED] || "0"),
-                remaining: parseFloat(balanceRow[BALANCE_COLUMNS.CASUAL_REMAINING] || "0"),
+                allocated: casualAllocated,
+                used: casualUsed,
+                remaining: casualAllocated - casualUsed,
             },
             sickLeave: {
-                allocated: parseFloat(balanceRow[BALANCE_COLUMNS.SICK_ALLOCATED] || "0"),
-                used: parseFloat(balanceRow[BALANCE_COLUMNS.SICK_USED] || "0"),
-                remaining: parseFloat(balanceRow[BALANCE_COLUMNS.SICK_REMAINING] || "0"),
+                allocated: sickAllocated,
+                used: sickUsed,
+                remaining: sickAllocated - sickUsed,
             },
             earnedLeave: {
-                allocated: parseFloat(balanceRow[BALANCE_COLUMNS.EARNED_ALLOCATED] || "0"),
-                used: parseFloat(balanceRow[BALANCE_COLUMNS.EARNED_USED] || "0"),
-                remaining: parseFloat(balanceRow[BALANCE_COLUMNS.EARNED_REMAINING] || "0"),
+                allocated: earnedAllocated,
+                used: earnedUsed,
+                remaining: earnedAllocated - earnedUsed,
             },
-            totalAllocated: parseFloat(balanceRow[BALANCE_COLUMNS.TOTAL_ALLOCATED] || "0"),
-            totalUsed: parseFloat(balanceRow[BALANCE_COLUMNS.TOTAL_USED] || "0"),
-            totalRemaining: parseFloat(balanceRow[BALANCE_COLUMNS.TOTAL_REMAINING] || "0"),
-            lastUpdated: balanceRow[BALANCE_COLUMNS.LAST_UPDATED] || "",
+            totalAllocated,
+            totalUsed,
+            totalRemaining,
+            lastUpdated: new Date().toISOString(),
         };
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error fetching leave balance:", error);
-        throw new Error("Failed to fetch leave balance");
+        if (error.message?.includes("Unable to parse range")) {
+            console.error("Sheet 'LeaveBalance' may not exist or has incorrect structure. Please run setup script.");
+        }
+        return null;
     }
 }
 

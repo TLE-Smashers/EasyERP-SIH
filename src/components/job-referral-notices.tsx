@@ -30,8 +30,12 @@ export default function JobReferralNotices({
 
         async function loadReferrals() {
             try {
+                console.log("[JobReferralNotices] Starting to load referrals...");
                 const data = await getApprovedReferrals();
+                console.log("[JobReferralNotices] Received data:", data);
+                console.log("[JobReferralNotices] Data length:", data.length);
                 setReferrals(data.slice(0, maxDisplay));
+                console.log("[JobReferralNotices] Set referrals state with", data.slice(0, maxDisplay).length, "items");
             } catch (error) {
                 console.error("Error loading job referrals:", error);
             } finally {
@@ -47,6 +51,7 @@ export default function JobReferralNotices({
     }
 
     if (isLoading) {
+        console.log("[JobReferralNotices] Component is loading...");
         return (
             <div className="space-y-3">
                 {showHeader && <Skeleton className="h-6 w-48" />}
@@ -56,9 +61,28 @@ export default function JobReferralNotices({
         );
     }
 
+    console.log("[JobReferralNotices] Rendering with referrals.length =", referrals.length);
+    console.log("[JobReferralNotices] Referrals state:", referrals);
+
     if (referrals.length === 0) {
-        return null;
+        console.log("[JobReferralNotices] No referrals, showing empty state");
+        return (
+            <div className="space-y-4">
+                {showHeader && (
+                    <h3 className="text-lg font-semibold">Job Opportunities</h3>
+                )}
+                <Card>
+                    <CardContent className="py-12 text-center">
+                        <Briefcase className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+                        <p className="text-muted-foreground">No job opportunities available at the moment</p>
+                        <p className="text-sm text-muted-foreground mt-2">Check back later for alumni referrals</p>
+                    </CardContent>
+                </Card>
+            </div>
+        );
     }
+
+    console.log("[JobReferralNotices] About to render", referrals.length, "referral cards");
 
     return (
         <div className="space-y-4">
