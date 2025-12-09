@@ -24,6 +24,7 @@ import JobReferralNotices from "@/components/job-referral-notices";
 
 export default async function DashboardPage() {
   const session = await auth();
+  console.log('Dashboard access - Session: super admin login', session);
 
   if (!session?.user) {
     redirect("/auth/signin");
@@ -36,7 +37,9 @@ export default async function DashboardPage() {
 
   // Only admin users see the overview dashboard
   // Other roles MUST be redirected to their specific module dashboards
-  if (userRole === "librarian") {
+  if (userRole === "super-admin") {
+    redirect("/dashboard/super-admin");
+  } else if (userRole === "librarian") {
     redirect("/dashboard/library");
   } else if (userRole === "admission") {
     redirect("/dashboard/admission");

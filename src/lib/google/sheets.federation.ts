@@ -8,6 +8,7 @@ import {
   Institution,
   SharedEbook,
   SharedNote,
+  SharedResource,
   ResourceAccessLog,
   SearchIndex,
   SharingRequest,
@@ -15,6 +16,7 @@ import {
   InstitutionUpdateData,
   SharedEbookUpdateData,
   SharedNoteUpdateData,
+  SharedResourceUpdateData,
   AccessType,
 } from "@/types/federation";
 
@@ -28,6 +30,7 @@ const LOCAL_SHEET_ID = process.env.GOOGLE_SHEETS_ID;
 const INSTITUTIONS_SHEET = "Institutions";
 const SHARED_EBOOKS_SHEET = "Shared_Ebooks";
 const SHARED_NOTES_SHEET = "Shared_Notes";
+const SHARED_RESOURCES_SHEET = "Shared_Resources";
 const ACCESS_LOGS_SHEET = "Access_Logs";
 const SEARCH_INDEX_SHEET = "Search_Index";
 const SHARING_REQUESTS_SHEET = "Sharing_Requests";
@@ -511,6 +514,213 @@ export async function incrementNoteViews(noteId: string): Promise<void> {
   }
 }
 
+// ============================================
+// SHARED RESOURCES (Videos, Lectures, etc.)
+// ============================================
+
+/**
+ * Fetch all shared resources from Super Master with optional filters
+ */
+export async function fetchAllSharedResources(filter?: {
+  institutionId?: string;
+  type?: string;
+  category?: string;
+  searchQuery?: string;
+}): Promise<SharedResource[]> {
+  try {
+    // Check if Super Master Sheet is configured
+    if (!SUPER_MASTER_SHEET_ID) {
+      console.warn('Super Master Sheet not configured, returning empty array');
+      return [];
+    }
+
+    const auth = await getAuthClient();
+    const sheets = google.sheets({ version: "v4", auth: await auth.getClient() as any });
+
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SUPER_MASTER_SHEET_ID,
+      range: `${SHARED_RESOURCES_SHEET}!A2:X`,
+    });
+
+    const rows = response.data.values || [];
+    
+    let resources: SharedResource[] = rows.map((row: any[], index: number) => ({
+      resourceId: row[0] || '',
+      type: (row[1] || 'other') as 'video' | 'lecture' | 'research-paper' | 'presentation' | 'other',
+      title: row[2] || '',
+      author: row[3] || '',
+      category: row[4] || '',
+      description: row[5] || '',
+      fileUrl: row[6] || '',
+      fileName: row[7] || '',
+      fileSize: row[8] || '',
+      fileType: row[9] || '',
+      uploadedBy: row[10] || '',
+      uploadedByName: row[11] || '',
+      uploadedByRole: row[12] || '',
+      institutionId: row[13] || '',
+      institutionName: row[14] || '',
+      availableFor: row[15] ? (row[15] === 'all' ? ['all'] : row[15].split(',')) : [],
+      accessType: (row[16] || 'public') as AccessType,
+      downloads: parseInt(row[17]) || 0,
+      views: parseInt(row[18]) || 0,
+      rating: row[19] ? parseFloat(row[19]) : undefined,
+      uploadDate: row[20] || '',
+      lastUpdated: row[21] || '',
+      tags: row[22] ? row[22].split(',').map((t: string) => t.trim()) : [],
+      isActive: row[23] === 'TRUE',
+      rowNumber: index + 2,
+    }));
+
+    // Apply filters
+    if (filter?.institutionId) {
+      resources = resources.filter(r => r.institutionId === filter.institutionId);
+    }
+    if (filter?.type) {
+      resources = resources.filter(r => r.type === filter.type);
+    }
+    if (filter?.category) {
+      resources = resources.filter(r => r.category === filter.category);
+    }
+    if (filter?.searchQuery) {
+      const query = filter.searchQuery.toLowerCase();
+      resources = resources.filter(r => 
+        r.title.toLowerCase().includes(query) ||
+        (r.author && r.author.toLowerCase().includes(query)) ||
+        r.category.toLowerCase().includes(query)
+      );
+    }
+
+    // Filter by access permissions
+    resources = resources.filter(r => 
+      r.availableFor.includes('all') || 
+      r.availableFor.includes(CURRENT_INSTITUTION_ID || '')
+    );
+
+    return resources;
+  } catch (error: any) {
+    // If the sheet doesn't exist (400 error), return empty array instead of throwing
+    if (error?.code === 400 || error?.status === 400) {
+      console.warn('Shared_Resources sheet does not exist in Super Master spreadsheet. Create it or resources will only show local data.');
+      return [];
+    }
+    console.error("Error fetching shared resources:", error);
+    throw new Error("Failed to fetch shared resources");
+  }
+}
+
+/**
+ * Add shared resource to Super Master
+ */
+export async function addSharedResource(resource: Omit<SharedResource, 'rowNumber'>): Promise<void> {
+  try {
+    const auth = await getAuthClient();
+    const sheets = google.sheets({ version: "v4", auth: await auth.getClient() as any });
+
+    const row = [
+      resource.resourceId,
+      resource.type,
+      resource.title,
+      resource.author || '',
+      resource.category,
+      resource.description || '',
+      resource.fileUrl,
+      resource.fileName || '',
+      resource.fileSize || '',
+      resource.fileType || '',
+      resource.uploadedBy,
+      resource.uploadedByName,
+      resource.uploadedByRole,
+      resource.institutionId,
+      resource.institutionName,
+      resource.availableFor.join(','),
+      resource.accessType,
+      resource.downloads.toString(),
+      resource.views?.toString() || '0',
+      resource.rating?.toString() || '',
+      resource.uploadDate,
+      resource.lastUpdated || '',
+      resource.tags?.join(',') || '',
+      resource.isActive ? 'TRUE' : 'FALSE',
+    ];
+
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: SUPER_MASTER_SHEET_ID,
+      range: `${SHARED_RESOURCES_SHEET}!A:X`,
+      valueInputOption: "RAW",
+      requestBody: { values: [row] },
+    });
+
+    // Also update search index
+    await addToSearchIndex({
+      resourceId: resource.resourceId,
+      resourceType: 'resource',
+      title: resource.title,
+      author: resource.author || resource.uploadedByName,
+      category: resource.category,
+      subject: resource.category,
+      institutionId: resource.institutionId,
+      institutionName: resource.institutionName,
+      keywords: [resource.title, resource.category, ...(resource.tags || [])].join(','),
+    });
+  } catch (error) {
+    console.error("Error adding shared resource:", error);
+    throw new Error("Failed to add shared resource");
+  }
+}
+
+/**
+ * Update resource download count
+ */
+export async function incrementResourceDownloads(resourceId: string): Promise<void> {
+  try {
+    const resources = await fetchAllSharedResources();
+    const resource = resources.find(r => r.resourceId === resourceId);
+    
+    if (!resource || !resource.rowNumber) return;
+
+    const auth = await getAuthClient();
+    const sheets = google.sheets({ version: "v4", auth: await auth.getClient() as any });
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SUPER_MASTER_SHEET_ID,
+      range: `${SHARED_RESOURCES_SHEET}!R${resource.rowNumber}`,
+      valueInputOption: "RAW",
+      requestBody: {
+        values: [[(resource.downloads + 1).toString()]],
+      },
+    });
+  } catch (error) {
+    console.error("Error updating resource downloads:", error);
+  }
+}
+
+/**
+ * Update resource view count
+ */
+export async function incrementResourceViews(resourceId: string): Promise<void> {
+  try {
+    const resources = await fetchAllSharedResources();
+    const resource = resources.find(r => r.resourceId === resourceId);
+    
+    if (!resource || !resource.rowNumber) return;
+
+    const auth = await getAuthClient();
+    const sheets = google.sheets({ version: "v4", auth: await auth.getClient() as any });
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SUPER_MASTER_SHEET_ID,
+      range: `${SHARED_RESOURCES_SHEET}!S${resource.rowNumber}`,
+      valueInputOption: "RAW",
+      requestBody: {
+        values: [[(resource.views! + 1).toString()]],
+      },
+    });
+  } catch (error) {
+    console.error("Error updating resource views:", error);
+  }
+}
+
 // ==========================================
 // ACCESS LOGS
 // ==========================================
@@ -566,7 +776,7 @@ export async function logResourceAccess(log: Omit<ResourceAccessLog, 'logId' | '
  */
 async function addToSearchIndex(data: {
   resourceId: string;
-  resourceType: 'ebook' | 'note';
+  resourceType: 'ebook' | 'note' | 'resource';
   title: string;
   author?: string;
   category: string;
