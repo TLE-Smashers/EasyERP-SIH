@@ -96,7 +96,7 @@ function parseResourceRow(row: string[]): LibraryResource {
 async function generateResourceId(): Promise<string> {
   try {
     const sheets = await getSheetsClient();
-    const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
+    const spreadsheetId = process.env.SUPER_MASTER_SHEET_ID;
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
@@ -134,7 +134,7 @@ export async function uploadResource(
 ): Promise<{ success: boolean; data?: LibraryResource; error?: string }> {
   try {
     const sheets = await getSheetsClient();
-    const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
+    const spreadsheetId = process.env.SUPER_MASTER_SHEET_ID;
 
     // Generate new resource ID
     const resourceId = await generateResourceId();
@@ -215,7 +215,7 @@ export async function getAllResources(
 ): Promise<{ success: boolean; data?: LibraryResource[]; error?: string }> {
   try {
     const sheets = await getSheetsClient();
-    const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
+    const spreadsheetId = process.env.SUPER_MASTER_SHEET_ID;
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
@@ -312,7 +312,7 @@ export async function incrementDownloadCount(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const sheets = await getSheetsClient();
-    const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
+    const spreadsheetId = process.env.SUPER_MASTER_SHEET_ID;
 
     // Get resource
     const result = await getResourceById(resourceId);
@@ -349,7 +349,7 @@ export async function updateResource(
 ): Promise<{ success: boolean; data?: LibraryResource; error?: string }> {
   try {
     const sheets = await getSheetsClient();
-    const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
+    const spreadsheetId = process.env.SUPER_MASTER_SHEET_ID;
 
     // Get existing resource
     const result = await getResourceById(resourceId);
