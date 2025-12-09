@@ -80,54 +80,58 @@ export function UploadSharedNoteForm({ userId, userName, userEmail, onSuccess }:
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="space-y-2">
         <Label htmlFor="title">Title *</Label>
         <Input
           id="title"
           {...register('title', { required: 'Title is required' })}
           placeholder="e.g., Operating Systems Basics"
+          className="h-10"
         />
-        {errors.title && <p className="text-sm text-red-600 mt-1">{errors.title.message}</p>}
+        {errors.title && <p className="text-sm text-red-600">{errors.title.message}</p>}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
           <Label htmlFor="subject">Subject *</Label>
           <Input
             id="subject"
             {...register('subject', { required: 'Subject is required' })}
             placeholder="e.g., Operating Systems"
+            className="h-10"
           />
-          {errors.subject && <p className="text-sm text-red-600 mt-1">{errors.subject.message}</p>}
+          {errors.subject && <p className="text-sm text-red-600">{errors.subject.message}</p>}
         </div>
 
-        <div>
+        <div className="space-y-2">
           <Label htmlFor="topic">Topic *</Label>
           <Input
             id="topic"
             {...register('topic', { required: 'Topic is required' })}
             placeholder="e.g., Process Scheduling"
+            className="h-10"
           />
-          {errors.topic && <p className="text-sm text-red-600 mt-1">{errors.topic.message}</p>}
+          {errors.topic && <p className="text-sm text-red-600">{errors.topic.message}</p>}
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="space-y-2">
           <Label htmlFor="course">Course *</Label>
           <Input
             id="course"
             {...register('course', { required: 'Course is required' })}
             placeholder="e.g., B.Tech"
+            className="h-10"
           />
-          {errors.course && <p className="text-sm text-red-600 mt-1">{errors.course.message}</p>}
+          {errors.course && <p className="text-sm text-red-600">{errors.course.message}</p>}
         </div>
 
-        <div>
+        <div className="space-y-2">
           <Label htmlFor="semester">Semester *</Label>
           <Select onValueChange={(value) => setValue('semester', value)}>
-            <SelectTrigger>
+            <SelectTrigger className="h-10">
               <SelectValue placeholder="Select semester" />
             </SelectTrigger>
             <SelectContent>
@@ -140,55 +144,59 @@ export function UploadSharedNoteForm({ userId, userName, userEmail, onSuccess }:
           </Select>
         </div>
 
-        <div>
+        <div className="space-y-2">
           <Label htmlFor="branch">Branch *</Label>
           <Input
             id="branch"
             {...register('branch', { required: 'Branch is required' })}
             placeholder="e.g., CSE"
+            className="h-10"
           />
-          {errors.branch && <p className="text-sm text-red-600 mt-1">{errors.branch.message}</p>}
+          {errors.branch && <p className="text-sm text-red-600">{errors.branch.message}</p>}
         </div>
       </div>
 
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="academicYear">Academic Year *</Label>
         <Input
           id="academicYear"
           {...register('academicYear', { required: 'Academic year is required' })}
           placeholder="e.g., 2024-25"
+          className="h-10"
         />
-        {errors.academicYear && <p className="text-sm text-red-600 mt-1">{errors.academicYear.message}</p>}
+        {errors.academicYear && <p className="text-sm text-red-600">{errors.academicYear.message}</p>}
       </div>
 
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
         <Textarea
           id="description"
           {...register('description')}
           placeholder="Brief description of the notes"
           rows={3}
+          className="resize-none"
         />
       </div>
 
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="fileUrl">Google Drive File URL *</Label>
         <Input
           id="fileUrl"
           {...register('fileUrl', { required: 'File URL is required' })}
           placeholder="https://drive.google.com/file/d/..."
+          className="h-10"
         />
-        {errors.fileUrl && <p className="text-sm text-red-600 mt-1">{errors.fileUrl.message}</p>}
-        <p className="text-xs text-muted-foreground mt-1">
+        {errors.fileUrl && <p className="text-sm text-red-600">{errors.fileUrl.message}</p>}
+        <p className="text-xs text-muted-foreground">
           Upload file to Google Drive and paste shareable link here
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
           <Label htmlFor="fileType">File Type *</Label>
           <Select onValueChange={(value) => setValue('fileType', value as any)}>
-            <SelectTrigger>
+            <SelectTrigger className="h-10">
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
             <SelectContent>
@@ -201,30 +209,33 @@ export function UploadSharedNoteForm({ userId, userName, userEmail, onSuccess }:
           </Select>
         </div>
 
-        <div>
-          <Label htmlFor="fileSize">File Size (bytes) *</Label>
+        <div className="space-y-2">
+          <Label htmlFor="fileSize">File Size (MB) *</Label>
           <Input
             id="fileSize"
             {...register('fileSize', { required: 'File size is required' })}
-            placeholder="e.g., 2097152"
+            placeholder="e.g., 2.5"
             type="number"
+            step="0.1"
+            className="h-10"
           />
         </div>
       </div>
 
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="tags">Tags (comma-separated)</Label>
         <Input
           id="tags"
           {...register('tags')}
           placeholder="os, process, scheduling"
+          className="h-10"
         />
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="text-xs text-muted-foreground">
           Add tags to help students find your notes
         </p>
       </div>
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
+      <Button type="submit" className="w-full h-11" disabled={isSubmitting}>
         {isSubmitting ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -23,31 +23,35 @@ export function UploadResourcesForm({ userId, userName, userRole }: UploadResour
   };
 
   return (
-    <Tabs defaultValue="ebooks" className="w-full">
-      <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="ebooks" className="flex items-center gap-2">
-          <BookOpen className="h-4 w-4" />
-          Upload E-Book
-        </TabsTrigger>
-        <TabsTrigger value="notes" className="flex items-center gap-2">
-          <FileText className="h-4 w-4" />
-          Upload Notes
-        </TabsTrigger>
-        <TabsTrigger value="videos" className="flex items-center gap-2">
-          <Video className="h-4 w-4" />
-          Upload Video
-        </TabsTrigger>
-      </TabsList>
+    <div className="space-y-6">
+      <Tabs defaultValue="ebooks" className="w-full">
+        <TabsList className="inline-flex h-10 items-center justify-start rounded-lg bg-muted p-1 text-muted-foreground w-auto">
+          <TabsTrigger value="ebooks" className="inline-flex items-center gap-2 px-4">
+            <BookOpen className="h-4 w-4" />
+            <span className="hidden sm:inline">Upload E-Book</span>
+            <span className="sm:hidden">E-Book</span>
+          </TabsTrigger>
+          <TabsTrigger value="notes" className="inline-flex items-center gap-2 px-4">
+            <FileText className="h-4 w-4" />
+            <span className="hidden sm:inline">Upload Notes</span>
+            <span className="sm:hidden">Notes</span>
+          </TabsTrigger>
+          <TabsTrigger value="videos" className="inline-flex items-center gap-2 px-4">
+            <Video className="h-4 w-4" />
+            <span className="hidden sm:inline">Upload Video</span>
+            <span className="sm:hidden">Video</span>
+          </TabsTrigger>
+        </TabsList>
 
-      <TabsContent value="ebooks">
-        <Card>
-          <CardHeader>
-            <CardTitle>Upload E-Book to Shared_Ebooks</CardTitle>
-            <CardDescription>
-              Share e-books with students across all partner institutions via federation. Supported formats: PDF, EPUB
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        <TabsContent value="ebooks" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Upload E-Book to Shared_Ebooks</CardTitle>
+              <CardDescription>
+                Share e-books with students across all partner institutions via federation. Supported formats: PDF, EPUB
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
             <UploadSharedEbookForm
               userId={userId}
               userName={userName}
@@ -57,7 +61,7 @@ export function UploadResourcesForm({ userId, userName, userRole }: UploadResour
         </Card>
       </TabsContent>
 
-      <TabsContent value="notes">
+      <TabsContent value="notes" className="mt-6">
         <Card>
           <CardHeader>
             <CardTitle>Upload Notes to Shared_Notes</CardTitle>
@@ -76,12 +80,12 @@ export function UploadResourcesForm({ userId, userName, userRole }: UploadResour
         </Card>
       </TabsContent>
 
-      <TabsContent value="videos">
+      <TabsContent value="videos" className="mt-6">
         <Card>
           <CardHeader>
-            <CardTitle>Upload Video to LibraryResources</CardTitle>
+            <CardTitle>Upload Video to SharedVideos</CardTitle>
             <CardDescription>
-              Upload video lectures to LibraryResources sheet. Provide YouTube or Google Drive link. Supported: MP4, WebM
+              Upload video lectures to federation. Provide YouTube or Google Drive link. Supported: MP4, WebM
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -94,6 +98,7 @@ export function UploadResourcesForm({ userId, userName, userRole }: UploadResour
           </CardContent>
         </Card>
       </TabsContent>
-    </Tabs>
+      </Tabs>
+    </div>
   );
 }

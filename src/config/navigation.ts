@@ -104,80 +104,80 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
         { title: "Add Institution", url: "/dashboard/super-admin/institutions/new" },
       ],
     },
-    {
-      title: "Federation Network",
-      url: "#",
-      icon: Network,
-      items: [
-        { title: "Network Overview", url: "/dashboard/super-admin/federation" },
-        { title: "Resource Sharing", url: "/dashboard/super-admin/federation/resources" },
-        { title: "Inter-Institution Transfer", url: "/dashboard/super-admin/federation/transfers" },
-      ],
-    },
-    {
-      title: "Global Users",
-      url: "#",
-      icon: Users,
-      items: [
-        { title: "All Users", url: "/dashboard/super-admin/users" },
-        { title: "Institution Admins", url: "/dashboard/super-admin/users/admins" },
-        { title: "Cross-Institution Access", url: "/dashboard/super-admin/users/access" },
-      ],
-    },
-    {
-      title: "Analytics & Reports",
-      url: "#",
-      icon: BarChart3,
-      items: [
-        { title: "System Overview", url: "/dashboard/super-admin/analytics" },
-        { title: "Institution Performance", url: "/dashboard/super-admin/analytics/institutions" },
-        { title: "Resource Usage", url: "/dashboard/super-admin/analytics/resources" },
-        { title: "User Activity", url: "/dashboard/super-admin/analytics/activity" },
-      ],
-    },
-    {
-      title: "Data Management",
-      url: "#",
-      icon: Database,
-      items: [
-        { title: "System Backups", url: "/dashboard/super-admin/data/backups" },
-        { title: "Data Migration", url: "/dashboard/super-admin/data/migration" },
-        { title: "Data Sync", url: "/dashboard/super-admin/data/sync" },
-      ],
-    },
-    {
-      title: "Security & Access",
-      url: "#",
-      icon: Shield,
-      items: [
-        { title: "Role Management", url: "/dashboard/super-admin/security/roles" },
-        { title: "Permissions", url: "/dashboard/super-admin/security/permissions" },
-        { title: "Audit Logs", url: "/dashboard/super-admin/security/audit" },
-        { title: "API Keys", url: "/dashboard/super-admin/security/api-keys" },
-      ],
-    },
-    {
-      title: "Global Configuration",
-      url: "#",
-      icon: Settings,
-      isSettings: true,
-      items: [
-        { title: "System Settings", url: "/dashboard/super-admin/settings" },
-        { title: "Email Configuration", url: "/dashboard/super-admin/settings/email" },
-        { title: "Integration Settings", url: "/dashboard/super-admin/settings/integrations" },
-        { title: "Feature Flags", url: "/dashboard/super-admin/settings/features" },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: FileText,
-      items: [
-        { title: "API Documentation", url: "/dashboard/super-admin/docs/api" },
-        { title: "Admin Guide", url: "/dashboard/super-admin/docs/guide" },
-        { title: "Federation Setup", url: "/dashboard/super-admin/docs/federation" },
-      ],
-    },
+    // {
+    //   title: "Federation Network",
+    //   url: "#",
+    //   icon: Network,
+    //   items: [
+    //     { title: "Network Overview", url: "/dashboard/super-admin/federation" },
+    //     { title: "Resource Sharing", url: "/dashboard/super-admin/federation/resources" },
+    //     { title: "Inter-Institution Transfer", url: "/dashboard/super-admin/federation/transfers" },
+    //   ],
+    // },
+    // {
+    //   title: "Global Users",
+    //   url: "#",
+    //   icon: Users,
+    //   items: [
+    //     { title: "All Users", url: "/dashboard/super-admin/users" },
+    //     { title: "Institution Admins", url: "/dashboard/super-admin/users/admins" },
+    //     { title: "Cross-Institution Access", url: "/dashboard/super-admin/users/access" },
+    //   ],
+    // },
+    // {
+    //   title: "Analytics & Reports",
+    //   url: "#",
+    //   icon: BarChart3,
+    //   items: [
+    //     { title: "System Overview", url: "/dashboard/super-admin/analytics" },
+    //     { title: "Institution Performance", url: "/dashboard/super-admin/analytics/institutions" },
+    //     { title: "Resource Usage", url: "/dashboard/super-admin/analytics/resources" },
+    //     { title: "User Activity", url: "/dashboard/super-admin/analytics/activity" },
+    //   ],
+    // },
+    // {
+    //   title: "Data Management",
+    //   url: "#",
+    //   icon: Database,
+    //   items: [
+    //     { title: "System Backups", url: "/dashboard/super-admin/data/backups" },
+    //     { title: "Data Migration", url: "/dashboard/super-admin/data/migration" },
+    //     { title: "Data Sync", url: "/dashboard/super-admin/data/sync" },
+    //   ],
+    // },
+    // {
+    //   title: "Security & Access",
+    //   url: "#",
+    //   icon: Shield,
+    //   items: [
+    //     { title: "Role Management", url: "/dashboard/super-admin/security/roles" },
+    //     { title: "Permissions", url: "/dashboard/super-admin/security/permissions" },
+    //     { title: "Audit Logs", url: "/dashboard/super-admin/security/audit" },
+    //     { title: "API Keys", url: "/dashboard/super-admin/security/api-keys" },
+    //   ],
+    // },
+    // {
+    //   title: "Global Configuration",
+    //   url: "#",
+    //   icon: Settings,
+    //   isSettings: true,
+    //   items: [
+    //     { title: "System Settings", url: "/dashboard/super-admin/settings" },
+    //     { title: "Email Configuration", url: "/dashboard/super-admin/settings/email" },
+    //     { title: "Integration Settings", url: "/dashboard/super-admin/settings/integrations" },
+    //     { title: "Feature Flags", url: "/dashboard/super-admin/settings/features" },
+    //   ],
+    // },
+    // {
+    //   title: "Documentation",
+    //   url: "#",
+    //   icon: FileText,
+    //   items: [
+    //     { title: "API Documentation", url: "/dashboard/super-admin/docs/api" },
+    //     { title: "Admin Guide", url: "/dashboard/super-admin/docs/guide" },
+    //     { title: "Federation Setup", url: "/dashboard/super-admin/docs/federation" },
+    //   ],
+    // },
   ],
   admin: [
     {

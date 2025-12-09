@@ -92,11 +92,11 @@ export function UploadSharedVideoForm({ userId, userName, userRole, onSuccess }:
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="space-y-2">
         <Label htmlFor="type">Resource Type *</Label>
         <Select onValueChange={(value) => setValue('type', value as any)} defaultValue="video">
-          <SelectTrigger>
+          <SelectTrigger className="h-10">
             <SelectValue placeholder="Select resource type" />
           </SelectTrigger>
           <SelectContent>
@@ -109,30 +109,32 @@ export function UploadSharedVideoForm({ userId, userName, userRole, onSuccess }:
         </Select>
       </div>
 
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="title">Title *</Label>
         <Input
           id="title"
           {...register('title', { required: 'Title is required' })}
           placeholder="e.g., Introduction to Machine Learning"
+          className="h-10"
         />
-        {errors.title && <p className="text-sm text-red-600 mt-1">{errors.title.message}</p>}
+        {errors.title && <p className="text-sm text-red-600">{errors.title.message}</p>}
       </div>
 
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="author">Instructor/Author *</Label>
         <Input
           id="author"
           {...register('author', { required: 'Author is required' })}
           placeholder="e.g., Dr. Andrew Ng"
+          className="h-10"
         />
-        {errors.author && <p className="text-sm text-red-600 mt-1">{errors.author.message}</p>}
+        {errors.author && <p className="text-sm text-red-600">{errors.author.message}</p>}
       </div>
 
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="category">Category *</Label>
         <Select onValueChange={(value) => setValue('category', value)}>
-          <SelectTrigger>
+          <SelectTrigger className="h-10">
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
           <SelectContent>
@@ -145,42 +147,45 @@ export function UploadSharedVideoForm({ userId, userName, userRole, onSuccess }:
         </Select>
       </div>
 
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
         <Textarea
           id="description"
           {...register('description')}
           placeholder="Brief description of the content"
           rows={3}
+          className="resize-none"
         />
       </div>
 
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="fileUrl">Resource URL *</Label>
         <Input
           id="fileUrl"
           {...register('fileUrl', { required: 'Resource URL is required' })}
           placeholder="YouTube link, Google Drive link, or direct URL"
+          className="h-10"
         />
-        {errors.fileUrl && <p className="text-sm text-red-600 mt-1">{errors.fileUrl.message}</p>}
-        <p className="text-xs text-muted-foreground mt-1">
+        {errors.fileUrl && <p className="text-sm text-red-600">{errors.fileUrl.message}</p>}
+        <p className="text-xs text-muted-foreground">
           Provide YouTube link, upload to Google Drive and paste shareable link, or any accessible URL
         </p>
       </div>
 
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="tags">Tags (comma-separated)</Label>
         <Input
           id="tags"
           {...register('tags')}
           placeholder="machine-learning, ai, introduction, lecture"
+          className="h-10"
         />
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="text-xs text-muted-foreground">
           Add tags to help students find this resource
         </p>
       </div>
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
+      <Button type="submit" className="w-full h-11" disabled={isSubmitting}>
         {isSubmitting ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
