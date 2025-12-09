@@ -84,36 +84,46 @@ export async function saveExamScores(scores: ExamScoreInput[]): Promise<{ succes
     const sheets = await getSheetsClient();
     const timestamp = new Date().toISOString();
 
-    // Prepare rows for insertion
+    // Prepare rows for insertion - ensure data starts from column A (index 0)
     const rows = scores.map((score) => {
       const scoreId = `SCR${Date.now()}${Math.random().toString(36).substr(2, 9)}`;
       return [
-        scoreId,
-        score.studentId,
-        score.enrollmentNumber,
-        score.studentName,
-        score.course,
-        score.branch,
-        score.currentYear,
-        score.currentSemester,
-        score.subjectCode,
-        score.subjectName,
-        score.examType,
-        score.maxMarks,
-        score.marksObtained,
-        score.remarks || "",
-        score.facultyId,
-        score.facultyName,
-        timestamp,
-        timestamp,
-        "Published",
-        score.academicYear,
+        scoreId,                    // Column A (0)
+        score.studentId,            // Column B (1)
+        score.enrollmentNumber,     // Column C (2)
+        score.studentName,          // Column D (3)
+        score.course,               // Column E (4)
+        score.branch,               // Column F (5)
+        score.currentYear,          // Column G (6)
+        score.currentSemester,      // Column H (7)
+        score.subjectCode,          // Column I (8)
+        score.subjectName,          // Column J (9)
+        score.examType,             // Column K (10)
+        score.maxMarks,             // Column L (11)
+        score.marksObtained,        // Column M (12)
+        score.remarks || "",        // Column N (13)
+        score.facultyId,            // Column O (14)
+        score.facultyName,          // Column P (15)
+        timestamp,                  // Column Q (16)
+        timestamp,                  // Column R (17)
+        "Published",                // Column S (18)
+        score.academicYear,         // Column T (19)
       ];
     });
 
-    await sheets.spreadsheets.values.append({
+    // Get the next empty row number
+    const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!A:T`,
+      range: `${SHEET_NAME}!A:A`,
+    });
+    
+    const existingRows = response.data.values || [];
+    const nextRow = existingRows.length + 1; // +1 because sheets are 1-indexed
+
+    // Use update instead of append to ensure data goes to column A
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${SHEET_NAME}!A${nextRow}:T${nextRow + rows.length - 1}`,
       valueInputOption: "RAW",
       requestBody: {
         values: rows,

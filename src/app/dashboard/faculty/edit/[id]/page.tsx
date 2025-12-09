@@ -24,12 +24,9 @@ export default function EditFacultyPage({ params }: { params: Promise<{ id: stri
 
     async function loadFaculty() {
         setIsFetching(true);
-        console.log("[Edit Page] Attempting to load faculty with ID:", unwrappedParams.id);
         try {
             const faculty = await fetchFaculty(unwrappedParams.id);
-            console.log("[Edit Page] Faculty data received:", faculty ? "Found" : "NOT FOUND");
             if (faculty) {
-                console.log("[Edit Page] Faculty ID:", faculty.facultyId);
                 setFacultyData({
                     facultyId: faculty.facultyId,
                     fullName: faculty.fullName,

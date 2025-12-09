@@ -18,16 +18,12 @@ export async function getUserByEmail(email: string): Promise<AuthUser | null> {
       throw new Error('GOOGLE_SHEETS_ID not configured');
     }
 
-    console.log('[getUserByEmail] Looking for user in Users sheet only:', email);
-
     // Only check Users sheet for login (faculty and students should be represented here for login)
     try {
       const user = await getUserFromUsersByEmail(email);
       if (user) {
-        console.log('[getUserByEmail] User found in Users sheet:', user.email);
         return user;
       }
-      console.log('[getUserByEmail] User not found in Users sheet:', email);
       return null;
     } catch (error) {
       console.error('[getUserByEmail] Error fetching from Users sheet:', error);

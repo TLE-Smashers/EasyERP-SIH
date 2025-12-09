@@ -133,19 +133,21 @@ export function CreatePaymentSheet({
           const verifyData = await verifyResponse.json();
 
           if (verifyData.success) {
-            toast.success('Payment successful!', {
-              description: 'Payment has been recorded successfully.',
+            toast.success('Payment Completed!', {
+              description: 'Your payment has been successfully processed. Redirecting to dashboard...',
+              duration: 3000,
             });
             
             onSuccess?.(payment.id);
             
-            // Refresh to show updated status
-            router.refresh();
+            // Close sheet
+            onOpenChange(false);
             
-            // Close sheet after a short delay
+            // Redirect to student dashboard after a short delay
             setTimeout(() => {
-              onOpenChange(false);
-            }, 1500);
+              router.push('/dashboard/student');
+              router.refresh();
+            }, 2000);
           } else {
             toast.error('Payment verification failed', {
               description: verifyData.error || 'Please contact support.',
@@ -175,9 +177,6 @@ export function CreatePaymentSheet({
   };
 
   const handleSubmit = async (data: CreatePaymentParams) => {
-    // Debug: log the feeBreakdown being sent
-    console.log('Submitting payment with feeBreakdown:', data.feeBreakdown);
-
     // For hostel, ensure defaultFeeBreakdown is enforced if not present
     if (paymentContext === 'hostel') {
       if (!data.feeBreakdown || typeof data.feeBreakdown.roomFee !== 'number') {
@@ -199,35 +198,42 @@ export function CreatePaymentSheet({
         data.feeBreakdown.messFee = 0;
       }
     }
+    
+    try {
+      const result = await createPaymentAction(data);
 
-    console.log('🔗 Generating payment link with data:', data);
-    const result = await createPaymentAction(data);
-
-    if (result.success && result.payment) {
-      // For Razorpay, open checkout modal
-      if (data.paymentMethod === 'razorpay' && result.razorpayOrder) {
-        toast.success('Payment initiated!', {
-          description: 'Opening payment gateway...',
+      if (result.success && result.payment) {
+        // For Razorpay, open checkout modal
+        if (data.paymentMethod === 'razorpay' && result.razorpayOrder) {
+          toast.success('Payment initiated!', {
+            description: 'Opening payment gateway...',
+          });
+          // Close the Sheet before opening Razorpay modal
+          onOpenChange(false);
+          setTimeout(() => {
+            handleRazorpayCheckout(result.razorpayOrder, result.payment);
+          }, 300);
+        } 
+        // For manual payments (cash, bank, cheque)
+        else {
+          toast.success('Payment created successfully!', {
+            description: `Payment ID: ${result.payment.id}`,
+          });
+          
+          onSuccess?.(result.payment.id);
+          router.refresh();
+          onOpenChange(false);
+        }
+      } else {
+        console.error('Payment creation failed:', result.error);
+        toast.error('Failed to create payment', {
+          description: result.error || 'An error occurred while creating the payment.',
         });
-        // Close the Sheet before opening Razorpay modal
-        onOpenChange(false);
-        setTimeout(() => {
-          handleRazorpayCheckout(result.razorpayOrder, result.payment);
-        }, 300);
-      } 
-      // For manual payments (cash, bank, cheque)
-      else {
-        toast.success('Payment created successfully!', {
-          description: `Payment ID: ${result.payment.id}`,
-        });
-        
-        onSuccess?.(result.payment.id);
-        router.refresh();
-        onOpenChange(false);
       }
-    } else {
-      toast.error('Failed to create payment', {
-        description: result.error || 'An error occurred while creating the payment.',
+    } catch (error) {
+      console.error('Payment submission error:', error);
+      toast.error('Payment submission failed', {
+        description: error instanceof Error ? error.message : 'An unexpected error occurred.',
       });
     }
   };
@@ -259,6 +265,8 @@ export function CreatePaymentSheet({
       branch: contextData?.branch || '',
       category: contextData?.category || 'General',
       paymentType,
+      academicYear: contextData?.academicYear,
+      semester: contextData?.semester ? (typeof contextData.semester === 'number' ? contextData.semester : parseInt(contextData.semester)) : undefined,
     };
     applicationId = contextData?.applicationId;
     studentId = contextData?.studentId;
