@@ -17,7 +17,7 @@ async function getDriveClient() {
     credentials,
     scopes: [
       'https://www.googleapis.com/auth/drive.file',
-      'https://www.googleapis.com/auth/drive.appdata',
+      'https://www.googleapis.com/auth/drive',
     ],
   });
 
@@ -27,42 +27,47 @@ async function getDriveClient() {
 
 /**
  * Get or create the attendance photos folder
+ * IMPORTANT: If GOOGLE_DRIVE_FOLDER_ID is not set, you must:
+ * 1. Manually create a folder in YOUR Google Drive
+ * 2. Share it with the service account email (Editor permissions)
+ * 3. Add the folder ID to .env.local as GOOGLE_DRIVE_FOLDER_ID
  */
 async function getOrCreateFolder(drive: any): Promise<string> {
-  // Check if folder ID is stored in env
+  // MUST use pre-created folder ID since service accounts have no storage quota
   if (process.env.GOOGLE_DRIVE_FOLDER_ID) {
+    console.log(`[Drive] Using pre-configured folder: ${process.env.GOOGLE_DRIVE_FOLDER_ID}`);
     return process.env.GOOGLE_DRIVE_FOLDER_ID;
   }
 
-  // Search for existing folder
-  const searchResponse = await drive.files.list({
-    q: `name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-    fields: 'files(id, name)',
-    spaces: 'drive',
-  });
+  // Try to search for folder shared with service account
+  try {
+    const searchResponse = await drive.files.list({
+      q: `name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+      fields: 'files(id, name)',
+      spaces: 'drive',
+    });
 
-  if (searchResponse.data.files && searchResponse.data.files.length > 0) {
-    const folderId = searchResponse.data.files[0].id;
-    console.log(`[Drive] Using existing folder: ${folderId}`);
-    return folderId!;
+    if (searchResponse.data.files && searchResponse.data.files.length > 0) {
+      const folderId = searchResponse.data.files[0].id;
+      console.log(`[Drive] Found shared folder: ${folderId}`);
+      console.log(`[Drive] Add this to .env.local: GOOGLE_DRIVE_FOLDER_ID=${folderId}`);
+      return folderId!;
+    }
+  } catch (error) {
+    console.error('[Drive] Error searching for folder:', error);
   }
 
-  // Create new folder
-  const folderMetadata = {
-    name: FOLDER_NAME,
-    mimeType: 'application/vnd.google-apps.folder',
-  };
-
-  const folder = await drive.files.create({
-    requestBody: folderMetadata,
-    fields: 'id',
-  });
-
-  const folderId = folder.data.id!;
-  console.log(`[Drive] Created new folder: ${folderId}`);
-  console.log(`[Drive] Add this to .env.local: GOOGLE_DRIVE_FOLDER_ID=${folderId}`);
-
-  return folderId;
+  // No folder found - provide instructions
+  throw new Error(
+    `Google Drive folder not found. Please follow these steps:\n\n` +
+    `1. Create a folder named "${FOLDER_NAME}" in YOUR Google Drive\n` +
+    `2. Right-click the folder → Share\n` +
+    `3. Add this email with Editor permissions: ${process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL}\n` +
+    `4. Copy the folder ID from the URL (e.g., drive.google.com/drive/folders/FOLDER_ID)\n` +
+    `5. Add to .env.local: GOOGLE_DRIVE_FOLDER_ID=FOLDER_ID\n` +
+    `6. Restart the server\n\n` +
+    `Service accounts cannot create folders in their own storage.`
+  );
 }
 
 /**

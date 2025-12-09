@@ -33,7 +33,7 @@ export function calculateDistance(
 /**
  * Check if coordinates are within a geo-fence
  */
-export function isWithinGeoFence(
+export function isWithinGe  oFence(
   coordinates: GPSCoordinates,
   geoFence: GeoFenceConfig
 ): boolean {
@@ -131,21 +131,21 @@ export async function getCurrentGPS(): Promise<GPSCoordinates> {
         let message = 'Unable to get location';
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            message = 'Location permission denied. Please enable location access.';
+            message = 'Location permission denied. Please enable location access in browser settings.';
             break;
           case error.POSITION_UNAVAILABLE:
-            message = 'Location information unavailable.';
+            message = 'Location information unavailable. Please check if location services are enabled on your device.';
             break;
           case error.TIMEOUT:
-            message = 'Location request timed out.';
+            message = 'Location request timed out. Please ensure you have a clear view of the sky or try again.';
             break;
         }
         reject(new Error(message));
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
+        timeout: 30000, // Increased from 10s to 30s
+        maximumAge: 5000, // Accept cached location up to 5s old
       }
     );
   });

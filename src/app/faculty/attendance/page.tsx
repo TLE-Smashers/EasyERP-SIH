@@ -93,7 +93,7 @@ export default function FacultyAttendancePage() {
    * Handle camera + GPS capture
    * Automatically submits attendance
    */
-  const handleCapture = async (photo: string, gps: GPSCoordinates) => {
+  const handleCapture = async (photo: string, gps: GPSCoordinates, bypassGPSAccuracy?: boolean) => {
     setIsMarking(true);
     setMessage(null);
 
@@ -111,17 +111,19 @@ export default function FacultyAttendancePage() {
         photo,
         gps,
         device,
+        bypassGPSAccuracy,
       });
 
       if (result.success) {
         setMessage({ type: 'success', text: result.message });
         setShowCamera(false);
         
-        // Auto-reload status after 1 second
+        // Auto-reload status after 2 seconds (increased to allow Google Sheets to update)
         setTimeout(() => {
           loadTodayStatus();
-        }, 1000);
+        }, 2000);
       } else {
+        console.error('[Faculty Attendance] Mark attendance failed:', result.error);
         setMessage({ type: 'error', text: result.error || 'Failed to mark attendance' });
       }
     } catch (error: any) {

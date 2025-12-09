@@ -14,7 +14,7 @@ import { GPSCoordinates, PhotoCaptureResult, GPSCaptureResult } from '@/types/at
 import { getCurrentGPS, formatGPSCoordinates, isGPSAccuracyAcceptable } from '@/lib/attendance/geofence';
 
 interface CameraGPSCaptureProps {
-  onCapture: (photo: string, gps: GPSCoordinates) => void;
+  onCapture: (photo: string, gps: GPSCoordinates, bypassGPSAccuracy?: boolean) => void;
   onError?: (error: string) => void;
   quality?: number; // 0.1 to 1.0
   maxSizeKB?: number;
@@ -32,9 +32,11 @@ export function CameraGPSCapture({
   const [isCapturing, setIsCapturing] = useState(false);
   const [photo, setPhoto] = useState<string | null>(null);
   const [gps, setGps] = useState<GPSCoordinates | null>(null);
+  const [lowAccuracyGps, setLowAccuracyGps] = useState<GPSCoordinates | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [gpsError, setGpsError] = useState<string | null>(null);
+  const [showContinueAnyway, setShowContinueAnyway] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -140,10 +142,14 @@ export function CameraGPSCapture({
       const coordinates = await getCurrentGPS();
       
       // Check accuracy if required
-      if (requireHighAccuracy && !isGPSAccuracyAcceptable(coordinates)) {
+      // For testing indoors, allow up to 500m accuracy
+      const maxAccuracy = requireHighAccuracy ? 500 : 5000; // Relaxed for testing
+      
+      if (coordinates.accuracy > maxAccuracy) {
         return {
           success: false,
-          error: `GPS accuracy too low (±${Math.round(coordinates.accuracy)}m). Please move to an open area.`,
+          error: `GPS accuracy too low (±${Math.round(coordinates.accuracy)}m). Please try:\n• Move to a window or open area\n• Wait 30 seconds for GPS to stabilize\n• Enable "High Accuracy" in location settings\n• Or continue anyway (will be flagged for admin review)`,
+          coordinates, // Return coordinates anyway
         };
       }
 
@@ -152,7 +158,14 @@ export function CameraGPSCapture({
         coordinates,
       };
     } catch (err: any) {
-      return { success: false, error: err.message || 'Failed to get GPS location' };
+      // Return a more helpful error message
+      const errorMessage = err.message || 'Failed to get GPS location';
+      return { 
+        success: false, 
+        error: errorMessage.includes('timed out') 
+          ? `${errorMessage}\n\nTroubleshooting:\n• Refresh the page and try again\n• Check if location is enabled on your device\n• Try using a different browser (Chrome recommended)\n• Move closer to a window or outdoors`
+          : errorMessage
+      };
     }
   }, [requireHighAccuracy]);
 
@@ -163,6 +176,8 @@ export function CameraGPSCapture({
     setIsCapturing(true);
     setError(null);
     setGpsError(null);
+    setShowContinueAnyway(false);
+    setLowAccuracyGps(null);
 
     try {
       // Capture photo
@@ -175,6 +190,14 @@ export function CameraGPSCapture({
       const gpsResult = await captureGPS();
       if (!gpsResult.success) {
         setGpsError(gpsResult.error || 'GPS failed');
+        
+        // If we have coordinates but low accuracy, allow continue anyway
+        if (gpsResult.coordinates) {
+          setLowAccuracyGps(gpsResult.coordinates);
+          setShowContinueAnyway(true);
+          setPhoto(photoResult.photo!);
+        }
+        
         throw new Error(gpsResult.error);
       }
 
@@ -187,12 +210,33 @@ export function CameraGPSCapture({
       stopCamera();
     } catch (err: any) {
       const message = err.message || 'Failed to capture attendance data';
-      setError(message);
-      onError?.(message);
+      if (!showContinueAnyway) {
+        setError(message);
+        onError?.(message);
+      }
     } finally {
       setIsCapturing(false);
     }
-  }, [capturePhoto, captureGPS, onCapture, onError, stopCamera]);
+  }, [capturePhoto, captureGPS, onCapture, stopCamera, onError]);
+
+  /**
+   * Continue with low accuracy GPS
+   */
+  const handleContinueAnyway = useCallback(() => {
+    if (photo && lowAccuracyGps) {
+      console.log('[CameraGPSCapture] Continue anyway with GPS:', {
+        lat: lowAccuracyGps.latitude,
+        lng: lowAccuracyGps.longitude,
+        accuracy: lowAccuracyGps.accuracy,
+        bypassGPSAccuracy: true
+      });
+      setGps(lowAccuracyGps);
+      setGpsError(null);
+      setShowContinueAnyway(false);
+      onCapture(photo, lowAccuracyGps, true); // Pass true to bypass GPS accuracy check
+      stopCamera();
+    }
+  }, [photo, lowAccuracyGps, onCapture, stopCamera]);
 
   /**
    * Retake photo
@@ -200,8 +244,10 @@ export function CameraGPSCapture({
   const handleRetake = useCallback(() => {
     setPhoto(null);
     setGps(null);
+    setLowAccuracyGps(null);
     setError(null);
     setGpsError(null);
+    setShowContinueAnyway(false);
     startCamera();
   }, [startCamera]);
 
@@ -249,7 +295,21 @@ export function CameraGPSCapture({
         {gpsError && (
           <Alert variant="destructive">
             <XCircle className="w-4 h-4" />
-            <AlertDescription>{gpsError}</AlertDescription>
+            <AlertDescription>
+              <div className="space-y-2">
+                <p className="whitespace-pre-line">{gpsError}</p>
+                {showContinueAnyway && lowAccuracyGps && (
+                  <Button
+                    onClick={handleContinueAnyway}
+                    variant="outline"
+                    size="sm"
+                    className="mt-2 w-full bg-white"
+                  >
+                    ⚠️ Continue Anyway (Will be flagged for admin review)
+                  </Button>
+                )}
+              </div>
+            </AlertDescription>
           </Alert>
         )}
 

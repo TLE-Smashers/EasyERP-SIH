@@ -123,7 +123,7 @@ export async function fetchAllAttendance(): Promise<FacultyAttendanceRecord[]> {
 
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: ATTENDANCE_SHEET_ID,
-            range: `${ATTENDANCE_SHEET_NAME}!A2:P`,
+            range: `${ATTENDANCE_SHEET_NAME}!A2:AA`, // Extended to include all 27 columns
         });
 
         const rows = response.data.values || [];
@@ -194,7 +194,7 @@ export async function markAttendance(attendance: Partial<FacultyAttendanceRecord
 
         await sheets.spreadsheets.values.append({
             spreadsheetId: ATTENDANCE_SHEET_ID,
-            range: `${ATTENDANCE_SHEET_NAME}!A:P`,
+            range: `${ATTENDANCE_SHEET_NAME}!A:AA`, // Extended to include all 27 columns
             valueInputOption: "RAW",
             requestBody: {
                 values: [row],

@@ -31,6 +31,7 @@ interface MarkAttendanceRequest {
   photo: string; // Base64
   gps: GPSCoordinates;
   device: DeviceInfo;
+  bypassGPSAccuracy?: boolean; // Allow low accuracy GPS (user clicked "Continue Anyway")
 }
 
 interface MarkAttendanceResponse {
@@ -174,21 +175,34 @@ export async function markAttendance(
   try {
     console.log(`[Attendance] Mark ${request.type} for ${request.facultyId}`);
     
-    const { facultyId, facultyName, employeeId, department, type, photo, gps, device } = request;
+    const { facultyId, facultyName, employeeId, department, type, photo, gps, device, bypassGPSAccuracy } = request;
     const flags: AttendanceFlag[] = [];
     
     // 1. Validate GPS accuracy
     const requiredAccuracy = parseInt(process.env.MIN_GPS_ACCURACY_METERS || '50');
     if (!isGPSAccuracyAcceptable(gps, requiredAccuracy)) {
-      return {
-        success: false,
-        error: `GPS accuracy too low (±${Math.round(gps.accuracy)}m). Required: ±${requiredAccuracy}m. Please move to an area with better signal.`,
-      };
+      // If user clicked "Continue Anyway", allow it but flag for review
+      if (bypassGPSAccuracy) {
+        flags.push('low_gps_accuracy');
+        console.log(`[Attendance] Low GPS accuracy bypassed by user (±${Math.round(gps.accuracy)}m)`);
+      } else {
+        return {
+          success: false,
+          error: `GPS accuracy too low (±${Math.round(gps.accuracy)}m). Required: ±${requiredAccuracy}m. Please move to an area with better signal.`,
+        };
+      }
     }
     
     // 2. Check geo-fence
     const geoFences = getGeoFences();
+    console.log('[Attendance] Checking geofences:', { 
+      gpsLat: gps.latitude, 
+      gpsLng: gps.longitude,
+      geoFencesCount: geoFences.length,
+      geoFences: geoFences.map(gf => ({ name: gf.name, centerLat: gf.centerLat, centerLng: gf.centerLng, radius: gf.radiusMeters }))
+    });
     const geoFenceCheck = checkGeoFences(gps, geoFences);
+    console.log('[Attendance] Geofence check result:', geoFenceCheck);
     
     if (!geoFenceCheck.isWithin) {
       flags.push('outside_geofence');
@@ -228,7 +242,8 @@ export async function markAttendance(
     const timestamp = new Date().toISOString();
     
     // 6. Check if attendance already exists for today
-    const existingAttendance = await fetchAttendanceByDate(facultyId, today);
+    const todayRecords = await fetchAttendanceByDate(today);
+    const existingAttendance = todayRecords.find(r => r.facultyId === facultyId);
     
     if (type === 'check_in') {
       // Check-in logic
@@ -385,10 +400,13 @@ export async function getTodayAttendanceStatus(facultyId: string): Promise<{
   checkOutTime?: string;
   status?: AttendanceStatus;
   totalHours?: number;
+  isLate?: boolean;
+  lateByMinutes?: number;
 }> {
   try {
     const today = new Date().toISOString().split('T')[0];
-    const attendance = await fetchAttendanceByDate(facultyId, today);
+    const records = await fetchAttendanceByDate(today);
+    const attendance = records.find(r => r.facultyId === facultyId);
     
     if (!attendance) {
       return {
@@ -404,6 +422,8 @@ export async function getTodayAttendanceStatus(facultyId: string): Promise<{
       checkOutTime: attendance.checkOutTime,
       status: attendance.status,
       totalHours: attendance.totalHours,
+      isLate: attendance.isLate,
+      lateByMinutes: attendance.lateByMinutes,
     };
   } catch (error) {
     console.error('[Attendance] Error fetching status:', error);

@@ -154,6 +154,7 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
       icon: ClipboardCheck,
       items: [
         { title: "Mark Attendance", url: "/dashboard/faculty/attendance-manage" },
+        { title: "Faculty Attendance", url: "/admin/attendance" },
       ],
     },
     {
