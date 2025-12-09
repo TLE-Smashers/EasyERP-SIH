@@ -159,7 +159,9 @@ export const authOptions: any = {
       if (url === baseUrl || url === `${baseUrl}/login`) {
         const role = token?.role;
 
-        if (role === 'librarian') {
+        if (role === 'super-admin') {
+          return `${baseUrl}/dashboard/super-admin`;
+        } else if (role === 'librarian') {
           return `${baseUrl}/dashboard/library`;
         } else if (role === 'warden' || role === 'hostel') {
           return `${baseUrl}/dashboard/hostel`;

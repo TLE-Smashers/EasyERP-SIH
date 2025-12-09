@@ -22,7 +22,7 @@ export function HostelRoomsClient({ rooms }: { rooms: HostelRoom[] }) {
         actions={
           <div className="flex gap-3">
             <AddRoomDialog />
-            <Link href="/dashboard/hostel">
+            <Link href="/dashboard/hostel/applications">
               <Button variant="outline" className="font-semibold">Back to Applications</Button>
             </Link>
           </div>

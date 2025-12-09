@@ -12,6 +12,17 @@ export default auth(async (req) => {
     return Response.redirect(loginUrl)
   }
 
+  // Super Admin access control
+  if (isLoggedIn && pathname.startsWith('/dashboard/super-admin')) {
+    const userRole = req.auth?.user?.role
+    
+    // Only super-admin role can access super-admin routes
+    if (userRole !== 'super-admin') {
+      const dashboardUrl = new URL('/dashboard', req.url)
+      return NextResponse.redirect(dashboardUrl)
+    }
+  }
+
   // Check if user is a student and redirect based on graduation status
   if (isLoggedIn && req.auth?.user?.role === 'student') {
     const userEmail = req.auth.user.email
