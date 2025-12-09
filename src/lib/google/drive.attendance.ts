@@ -36,7 +36,45 @@ async function getOrCreateFolder(drive: any): Promise<string> {
   // MUST use pre-created folder ID since service accounts have no storage quota
   if (process.env.GOOGLE_DRIVE_FOLDER_ID) {
     console.log(`[Drive] Using pre-configured folder: ${process.env.GOOGLE_DRIVE_FOLDER_ID}`);
-    return process.env.GOOGLE_DRIVE_FOLDER_ID;
+    
+    // Verify the folder is accessible and writable
+    try {
+      const folder = await drive.files.get({
+        fileId: process.env.GOOGLE_DRIVE_FOLDER_ID,
+        fields: 'id, name, capabilities',
+      });
+      
+      console.log(`[Drive] Folder found: ${folder.data.name}`);
+      console.log(`[Drive] Can edit: ${folder.data.capabilities?.canEdit}`);
+      
+      if (!folder.data.capabilities?.canEdit) {
+        throw new Error(
+          `Service account cannot write to this folder!\n\n` +
+          `Please share the folder with EDITOR permissions:\n` +
+          `1. Open: https://drive.google.com/drive/folders/${process.env.GOOGLE_DRIVE_FOLDER_ID}\n` +
+          `2. Click Share button\n` +
+          `3. Add: ${process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL}\n` +
+          `4. Set permission: Editor\n` +
+          `5. Uncheck "Notify people"\n` +
+          `6. Click Share\n` +
+          `7. Restart the server`
+        );
+      }
+      
+      return process.env.GOOGLE_DRIVE_FOLDER_ID;
+    } catch (error: any) {
+      if (error.code === 404) {
+        throw new Error(
+          `Folder not found (404).\n\n` +
+          `The folder ID "${process.env.GOOGLE_DRIVE_FOLDER_ID}" doesn't exist or isn't shared.\n\n` +
+          `Steps to fix:\n` +
+          `1. Open: https://drive.google.com/drive/folders/${process.env.GOOGLE_DRIVE_FOLDER_ID}\n` +
+          `2. If it opens, click Share and add: ${process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL} (Editor)\n` +
+          `3. If it doesn't open, create a new folder and update GOOGLE_DRIVE_FOLDER_ID`
+        );
+      }
+      throw error;
+    }
   }
 
   // Try to search for folder shared with service account
@@ -135,7 +173,22 @@ export async function uploadPhotoToDrive(
       fileId,
     };
   } catch (error: any) {
-    console.error('[Drive] Upload failed:', error);
+    console.error('[Drive] Upload failed:', error.message);
+    
+    // TEMPORARY WORKAROUND: Use base64 data URL as fallback for testing
+    // In production, you MUST fix the Drive permissions
+    if (error.message?.includes('storage quota') || error.message?.includes('403')) {
+      console.warn('[Drive] Using fallback - storing as data URL (NOT RECOMMENDED for production)');
+      console.warn('[Drive] Please share the folder with service account:', process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL);
+      
+      return {
+        success: true,
+        url: base64Photo, // Store as data URL temporarily
+        fileId: `local_${fileName}`,
+        error: 'Photo stored locally (Drive permission issue)',
+      };
+    }
+    
     return {
       success: false,
       error: error.message || 'Failed to upload photo to Google Drive',

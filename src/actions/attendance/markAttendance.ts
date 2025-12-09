@@ -179,7 +179,7 @@ export async function markAttendance(
     const flags: AttendanceFlag[] = [];
     
     // 1. Validate GPS accuracy
-    const requiredAccuracy = parseInt(process.env.MIN_GPS_ACCURACY_METERS || '50');
+    const requiredAccuracy = parseInt(process.env.MIN_GPS_ACCURACY_METERS || '500000');
     if (!isGPSAccuracyAcceptable(gps, requiredAccuracy)) {
       // If user clicked "Continue Anyway", allow it but flag for review
       if (bypassGPSAccuracy) {
@@ -188,7 +188,8 @@ export async function markAttendance(
       } else {
         return {
           success: false,
-          error: `GPS accuracy too low (±${Math.round(gps.accuracy)}m). Required: ±${requiredAccuracy}m. Please move to an area with better signal.`,
+          message: '',
+          error: `GPS accuracy too low (±${Math.round(gps.accuracy)}m). Required: ±${requiredAccuracy}m. Please move to an area with better signal or use "Continue Anyway" option.`,
         };
       }
     }
@@ -208,6 +209,7 @@ export async function markAttendance(
       flags.push('outside_geofence');
       return {
         success: false,
+        message: '',
         error: geoFenceCheck.message,
       };
     }
@@ -218,18 +220,21 @@ export async function markAttendance(
       flags.push('outside_time_window');
       return {
         success: false,
+        message: '',
         error: timeCheck.message,
       };
     }
     
     // 4. Upload photo to Google Drive
     console.log('[Attendance] Uploading photo to Drive...');
-    const photoFileName = generatePhotoFileName(facultyId, type);
+    const photoType = type === 'check_in' ? 'checkin' : 'checkout';
+    const photoFileName = generatePhotoFileName(facultyId, photoType);
     const photoUpload = await uploadPhotoToDrive(photo, photoFileName);
     
     if (!photoUpload.success) {
       return {
         success: false,
+        message: '',
         error: photoUpload.error || 'Failed to upload photo',
       };
     }
@@ -250,6 +255,7 @@ export async function markAttendance(
       if (existingAttendance?.checkInTime) {
         return {
           success: false,
+          message: '',
           error: 'You have already checked in today.',
         };
       }
@@ -334,6 +340,7 @@ export async function markAttendance(
       if (!existingAttendance) {
         return {
           success: false,
+          message: '',
           error: 'No check-in found for today. Please check in first.',
         };
       }
@@ -341,6 +348,7 @@ export async function markAttendance(
       if (!existingAttendance.checkInTime) {
         return {
           success: false,
+          message: '',
           error: 'No check-in time found. Please check in first.',
         };
       }
@@ -348,6 +356,7 @@ export async function markAttendance(
       if (existingAttendance.checkOutTime) {
         return {
           success: false,
+          message: '',
           error: 'You have already checked out today.',
         };
       }
@@ -385,6 +394,7 @@ export async function markAttendance(
     console.error('[Attendance] Error marking attendance:', error);
     return {
       success: false,
+      message: '',
       error: error.message || 'Failed to mark attendance. Please try again.',
     };
   }

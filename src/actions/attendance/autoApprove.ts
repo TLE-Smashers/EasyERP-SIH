@@ -217,3 +217,68 @@ export async function manualReject(
     return { success: false, message: error.message || 'Failed to reject' };
   }
 }
+
+/**
+ * Bulk approve all pending records (for testing/quick approval)
+ */
+export async function bulkApproveAll(adminId: string): Promise<{
+  success: boolean;
+  approved: number;
+  message: string;
+}> {
+  try {
+    const pendingRecords = await fetchPendingApprovals();
+    
+    let approved = 0;
+    for (const record of pendingRecords) {
+      try {
+        await updateAttendanceByRow(record.rowNumber!, {
+          requiresApproval: false,
+          approvedBy: adminId,
+          approvedAt: new Date().toISOString(),
+          remarks: 'Bulk approved by admin',
+        });
+        approved++;
+      } catch (error) {
+        console.error(`Failed to approve record ${record.id}:`, error);
+      }
+    }
+    
+    return {
+      success: true,
+      approved,
+      message: `Successfully approved ${approved} of ${pendingRecords.length} records`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      approved: 0,
+      message: error.message || 'Failed to bulk approve',
+    };
+  }
+}
+
+/**
+ * Get pending approvals list for admin dashboard
+ */
+export async function getPendingApprovals(): Promise<{
+  success: boolean;
+  data: FacultyAttendanceRecord[];
+  count: number;
+}> {
+  try {
+    const records = await fetchPendingApprovals();
+    return {
+      success: true,
+      data: records,
+      count: records.length,
+    };
+  } catch (error) {
+    console.error('[Pending Approvals] Error:', error);
+    return {
+      success: false,
+      data: [],
+      count: 0,
+    };
+  }
+}

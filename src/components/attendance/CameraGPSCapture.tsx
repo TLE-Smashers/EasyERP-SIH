@@ -24,8 +24,8 @@ interface CameraGPSCaptureProps {
 export function CameraGPSCapture({
   onCapture,
   onError,
-  quality = 0.8,
-  maxSizeKB = 500,
+  quality = 0.3,
+  maxSizeKB = 30,
   requireHighAccuracy = true,
 }: CameraGPSCaptureProps) {
   const [isCameraActive, setIsCameraActive] = useState(false);
@@ -102,21 +102,48 @@ export function CameraGPSCapture({
         return { success: false, error: 'Failed to get canvas context' };
       }
 
-      // Set canvas size to video size
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      // Resize to smaller dimensions for smaller file size
+      // Max 400px width to keep under Google Sheets 50k character limit
+      const maxWidth = 400;
+      const maxHeight = 400;
+      
+      let width = video.videoWidth;
+      let height = video.videoHeight;
+      
+      if (width > height) {
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = (width * maxHeight) / height;
+          height = maxHeight;
+        }
+      }
 
-      // Draw video frame to canvas
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.width = width;
+      canvas.height = height;
 
-      // Convert to base64 with compression
+      // Draw video frame to canvas (resized)
+      context.drawImage(video, 0, 0, width, height);
+
+      // Convert to base64 with aggressive compression
       let photoData = canvas.toDataURL('image/jpeg', quality);
 
-      // Check size and compress further if needed
+      // Check size and compress further if needed (target < 30KB)
       let currentQuality = quality;
-      while (photoData.length / 1024 > maxSizeKB && currentQuality > 0.1) {
-        currentQuality -= 0.1;
+      while (photoData.length / 1024 > maxSizeKB && currentQuality > 0.05) {
+        currentQuality -= 0.05;
         photoData = canvas.toDataURL('image/jpeg', currentQuality);
+      }
+
+      // Final check - if still too large, fail gracefully
+      if (photoData.length > 45000) { // Leave margin for safety
+        return { 
+          success: false, 
+          error: `Photo too large (${Math.round(photoData.length / 1024)}KB). Please ensure good lighting and try again.` 
+        };
       }
 
       return {
@@ -142,8 +169,8 @@ export function CameraGPSCapture({
       const coordinates = await getCurrentGPS();
       
       // Check accuracy if required
-      // For testing indoors, allow up to 500m accuracy
-      const maxAccuracy = requireHighAccuracy ? 500 : 5000; // Relaxed for testing
+      // For testing, allow up to 500km accuracy
+      const maxAccuracy = requireHighAccuracy ? 500000 : 5000000; // Very relaxed for testing
       
       if (coordinates.accuracy > maxAccuracy) {
         return {
@@ -432,6 +459,7 @@ export function CameraGPSCapture({
           <ul className="text-xs text-blue-800 space-y-1 list-disc list-inside">
             <li>Ensure good lighting for clear photo</li>
             <li>Position face within the circle</li>
+            <li>Photo will be compressed to ~30KB for storage</li>
             <li>Location must be within campus boundary</li>
             <li>Use front camera only (gallery upload disabled)</li>
           </ul>

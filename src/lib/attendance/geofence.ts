@@ -33,7 +33,7 @@ export function calculateDistance(
 /**
  * Check if coordinates are within a geo-fence
  */
-export function isWithinGe  oFence(
+export function isWithinGeoFence(
   coordinates: GPSCoordinates,
   geoFence: GeoFenceConfig
 ): boolean {

@@ -53,7 +53,7 @@ const ATTENDANCE_COLUMNS = {
 async function getSheetsClient() {
     const auth = new google.auth.GoogleAuth({
         credentials: {
-            client_email: process.env.GOOGLE_CLIENT_EMAIL,
+            client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
             private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
         },
         scopes: ["https://www.googleapis.com/auth/spreadsheets"],
@@ -102,13 +102,24 @@ function transformAttendanceToRow(attendance: Partial<FacultyAttendanceRecord>):
     row[ATTENDANCE_COLUMNS.DATE] = attendance.date || "";
     row[ATTENDANCE_COLUMNS.STATUS] = attendance.status || "";
     row[ATTENDANCE_COLUMNS.CHECK_IN_TIME] = attendance.checkInTime || "";
+    row[ATTENDANCE_COLUMNS.CHECK_IN_PHOTO_URL] = (attendance as any).checkInPhoto || "";
+    row[ATTENDANCE_COLUMNS.CHECK_IN_GPS] = (attendance as any).checkInGPS ? JSON.stringify((attendance as any).checkInGPS) : "";
+    row[ATTENDANCE_COLUMNS.CHECK_IN_DEVICE] = (attendance as any).checkInDevice ? JSON.stringify((attendance as any).checkInDevice) : "";
     row[ATTENDANCE_COLUMNS.CHECK_OUT_TIME] = attendance.checkOutTime || "";
+    row[ATTENDANCE_COLUMNS.CHECK_OUT_PHOTO_URL] = (attendance as any).checkOutPhoto || "";
+    row[ATTENDANCE_COLUMNS.CHECK_OUT_GPS] = (attendance as any).checkOutGPS ? JSON.stringify((attendance as any).checkOutGPS) : "";
+    row[ATTENDANCE_COLUMNS.CHECK_OUT_DEVICE] = (attendance as any).checkOutDevice ? JSON.stringify((attendance as any).checkOutDevice) : "";
     row[ATTENDANCE_COLUMNS.TOTAL_HOURS] = attendance.totalHours?.toString() || "";
     row[ATTENDANCE_COLUMNS.REMARKS] = attendance.remarks || "";
     row[ATTENDANCE_COLUMNS.MARKED_BY] = attendance.markedBy || "";
     row[ATTENDANCE_COLUMNS.METHOD] = attendance.method || "";
     row[ATTENDANCE_COLUMNS.IS_LATE] = attendance.isLate ? "TRUE" : "FALSE";
     row[ATTENDANCE_COLUMNS.LATE_BY_MINUTES] = attendance.lateByMinutes?.toString() || "";
+    row[ATTENDANCE_COLUMNS.IS_WITHIN_GEOFENCE] = (attendance as any).isWithinGeoFence ? "TRUE" : "FALSE";
+    row[ATTENDANCE_COLUMNS.FLAGS] = (attendance as any).flags ? JSON.stringify((attendance as any).flags) : "";
+    row[ATTENDANCE_COLUMNS.REQUIRES_APPROVAL] = (attendance as any).requiresApproval ? "TRUE" : "FALSE";
+    row[ATTENDANCE_COLUMNS.APPROVED_BY] = (attendance as any).approvedBy || "";
+    row[ATTENDANCE_COLUMNS.APPROVED_AT] = (attendance as any).approvedAt || "";
     row[ATTENDANCE_COLUMNS.TIMESTAMP] = attendance.timestamp || new Date().toISOString();
 
     return row;
@@ -351,7 +362,7 @@ export async function fetchTodaysAttendance(date: string): Promise<FacultyAttend
  */
 export async function fetchPendingApprovals(): Promise<FacultyAttendanceRecord[]> {
     try {
-        const sheets = google.sheets({ version: "v4", auth: await getAuth() });
+        const sheets = await getSheetsClient();
         
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: ATTENDANCE_SHEET_ID,
@@ -367,7 +378,7 @@ export async function fetchPendingApprovals(): Promise<FacultyAttendanceRecord[]
                     return null;
                 }
 
-                return mapRowToRecord(row, index + 2);
+                return transformRowToAttendance(row, index);
             })
             .filter((record): record is FacultyAttendanceRecord => record !== null);
 
@@ -386,7 +397,7 @@ export async function updateAttendanceByRow(
     updates: Partial<FacultyAttendanceRecord>
 ): Promise<void> {
     try {
-        const sheets = google.sheets({ version: "v4", auth: await getAuth() });
+        const sheets = await getSheetsClient();
         
         // Fetch the record to get current data
         const response = await sheets.spreadsheets.values.get({
@@ -399,7 +410,7 @@ export async function updateAttendanceByRow(
             throw new Error("Record not found");
         }
 
-        const currentRecord = mapRowToRecord(rows[0], rowNumber);
+        const currentRecord = transformRowToAttendance(rows[0], rowNumber - 2);
         const updatedRecord = { ...currentRecord, ...updates };
         const row = transformAttendanceToRow(updatedRecord);
 
