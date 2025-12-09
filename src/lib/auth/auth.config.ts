@@ -21,25 +21,40 @@ export const authOptions: any = {
       },
       async authorize(credentials: any) {
         try {
+          console.log('[Auth] Starting authorization for:', credentials?.email);
+          
           // Validate input
           if (!credentials?.email || !credentials?.password) {
+            console.error('[Auth] Missing email or password');
             throw new Error('Email and password are required');
           }
 
+          // Check environment variables
+          if (!process.env.USERS_SHEET_ID && !process.env.GOOGLE_SHEETS_ID) {
+            console.error('[Auth] Missing USERS_SHEET_ID or GOOGLE_SHEETS_ID');
+            throw new Error('System configuration error. Please contact support.');
+          }
+
           // Fetch user from Google Sheets
+          console.log('[Auth] Fetching user from Google Sheets...');
           const user = await getUserByEmail(credentials.email as string);
 
           if (!user) {
+            console.error('[Auth] No user found with email:', credentials.email);
             throw new Error('No user found with this email');
           }
 
+          console.log('[Auth] User found:', { email: user.email, role: user.role, status: user.status });
+
           // Check if account is active
           if (user.status !== 'active') {
+            console.error('[Auth] Account inactive:', user.email);
             throw new Error('Your account has been deactivated. Please contact administrator.');
           }
 
           // Verify password
           if (!user.password) {
+            console.error('[Auth] No password set for user:', user.email);
             throw new Error('Password not set for this account');
           }
 
@@ -49,21 +64,26 @@ export const authOptions: any = {
             // For students and faculty, compare passwords directly without hashing
             if (user.role === 'student' || user.role === 'faculty') {
               isPasswordValid = credentials.password === user.password;
+              console.log('[Auth] Direct password comparison for', user.role, ':', isPasswordValid);
             } else {
               // For other roles (admin, librarian, etc.), use bcrypt to compare hashed passwords
               isPasswordValid = await bcrypt.compare(
                 credentials.password as string,
                 user.password
               );
+              console.log('[Auth] Bcrypt password comparison:', isPasswordValid);
             }
           } catch (passwordError) {
-            console.error('Password verification error:', passwordError);
+            console.error('[Auth] Password verification error:', passwordError);
             throw new Error('Invalid email or password');
           }
 
           if (!isPasswordValid) {
+            console.error('[Auth] Invalid password for user:', user.email);
             throw new Error('Invalid email or password');
           }
+
+          console.log('[Auth] Authorization successful for:', user.email);
 
           // Return user data (without password)
           return {
@@ -74,7 +94,7 @@ export const authOptions: any = {
             department: user.department,
           };
         } catch (error) {
-          console.error('Authorization error:', error);
+          console.error('[Auth] Authorization error:', error);
           // Re-throw the error with the message for better client-side handling
           if (error instanceof Error) {
             throw error;
@@ -139,7 +159,9 @@ export const authOptions: any = {
       if (url === baseUrl || url === `${baseUrl}/login`) {
         const role = token?.role;
 
-        if (role === 'librarian') {
+        if (role === 'super-admin') {
+          return `${baseUrl}/dashboard/super-admin`;
+        } else if (role === 'librarian') {
           return `${baseUrl}/dashboard/library`;
         } else if (role === 'warden' || role === 'hostel') {
           return `${baseUrl}/dashboard/hostel`;

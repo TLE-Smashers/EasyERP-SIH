@@ -29,13 +29,16 @@ export function HostelRoomsTable({ data, onDeallocate }: HostelRoomsTableProps) 
 
   const performDeallocate = async (studentId: string) => {
     try {
+      console.log('[ROOMS TABLE] Deallocate clicked for studentId:', studentId);
       setLoadingId(studentId);
       const res = await fetch("/api/hostel/deallocate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ studentId }),
       });
+      console.log('[ROOMS TABLE] API response status:', res.status);
       const result = await res.json();
+      console.log('[ROOMS TABLE] API response data:', result);
       setDialogOpen(false);
       setSelectedStudentId(null);
       toast({
@@ -47,6 +50,7 @@ export function HostelRoomsTable({ data, onDeallocate }: HostelRoomsTableProps) 
         router.refresh();
       }
     } catch (error) {
+      console.error('[ROOMS TABLE] Error in performDeallocate:', error);
       setDialogOpen(false);
       setSelectedStudentId(null);
       toast({

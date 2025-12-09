@@ -28,5 +28,6 @@ export default async function HostelAllocationPage() {
         <HostelApplicationsTableClient data={applications} />
       </div>
     </div>
+
   );
 }

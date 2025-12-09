@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { LogoutButton } from "@/components/logout-button";
+import { ChatWidget } from "@/components/chat/ChatWidget";
 
 export default async function DashboardLayout({
   children,
@@ -40,6 +41,9 @@ export default async function DashboardLayout({
         <div className="flex flex-1 flex-col overflow-x-hidden px-4 md:px-6 lg:px-8 pt-2 pb-4 md:pt-3 md:pb-6 lg:pt-4 lg:pb-8">
           {children}
         </div>
+        
+        {/* AI Chatbot Widget */}
+        <ChatWidget />
       </SidebarInset>
     </SidebarProvider>
 

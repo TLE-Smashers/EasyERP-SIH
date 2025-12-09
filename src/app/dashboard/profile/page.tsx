@@ -169,5 +169,6 @@ export default async function ProfilePage() {
         </CardContent>
       </Card>
     </div>
+   
   );
 }
