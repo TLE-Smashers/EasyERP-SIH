@@ -37,7 +37,7 @@ export function CameraGPSCapture({
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [gpsError, setGpsError] = useState<string | null>(null);
   const [showContinueAnyway, setShowContinueAnyway] = useState(false);
-  
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -48,7 +48,18 @@ export function CameraGPSCapture({
   const startCamera = useCallback(async () => {
     try {
       setCameraError(null);
-      
+
+      // Check if running on HTTPS or localhost
+      const isSecureContext = window.isSecureContext;
+      if (!isSecureContext) {
+        throw new Error('Camera requires HTTPS. Please access via https:// or localhost');
+      }
+
+      // Check if mediaDevices is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera API not supported in this browser. Please use Chrome, Firefox, or Edge.');
+      }
+
       // Request front camera (for selfie)
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -65,10 +76,22 @@ export function CameraGPSCapture({
         setIsCameraActive(true);
       }
     } catch (err: any) {
-      const message = err.name === 'NotAllowedError'
-        ? 'Camera permission denied. Please enable camera access.'
-        : 'Failed to access camera. Please check your device settings.';
-      
+      let message = 'Failed to access camera.';
+
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        message = 'Camera permission denied. Please:\n1. Click the camera icon in the address bar\n2. Allow camera access\n3. Refresh the page and try again';
+      } else if (err.name === 'NotFoundError') {
+        message = 'No camera found on this device.';
+      } else if (err.name === 'NotReadableError') {
+        message = 'Camera is already in use by another application.';
+      } else if (err.message.includes('HTTPS') || err.message.includes('secure')) {
+        message = err.message + '\n\nTo fix:\n• Access via localhost (http://localhost:3000)\n• Or setup HTTPS for network access';
+      } else if (err.message.includes('not supported')) {
+        message = err.message;
+      } else if (err.message) {
+        message = err.message;
+      }
+
       setCameraError(message);
       onError?.(message);
     }
@@ -106,10 +129,10 @@ export function CameraGPSCapture({
       // Max 400px width to keep under Google Sheets 50k character limit
       const maxWidth = 400;
       const maxHeight = 400;
-      
+
       let width = video.videoWidth;
       let height = video.videoHeight;
-      
+
       if (width > height) {
         if (width > maxWidth) {
           height = (height * maxWidth) / width;
@@ -140,9 +163,9 @@ export function CameraGPSCapture({
 
       // Final check - if still too large, fail gracefully
       if (photoData.length > 45000) { // Leave margin for safety
-        return { 
-          success: false, 
-          error: `Photo too large (${Math.round(photoData.length / 1024)}KB). Please ensure good lighting and try again.` 
+        return {
+          success: false,
+          error: `Photo too large (${Math.round(photoData.length / 1024)}KB). Please ensure good lighting and try again.`
         };
       }
 
@@ -167,11 +190,11 @@ export function CameraGPSCapture({
   const captureGPS = useCallback(async (): Promise<GPSCaptureResult> => {
     try {
       const coordinates = await getCurrentGPS();
-      
+
       // Check accuracy if required
       // For testing, allow up to 500km accuracy
       const maxAccuracy = requireHighAccuracy ? 500000 : 5000000; // Very relaxed for testing
-      
+
       if (coordinates.accuracy > maxAccuracy) {
         return {
           success: false,
@@ -187,9 +210,9 @@ export function CameraGPSCapture({
     } catch (err: any) {
       // Return a more helpful error message
       const errorMessage = err.message || 'Failed to get GPS location';
-      return { 
-        success: false, 
-        error: errorMessage.includes('timed out') 
+      return {
+        success: false,
+        error: errorMessage.includes('timed out')
           ? `${errorMessage}\n\nTroubleshooting:\n• Refresh the page and try again\n• Check if location is enabled on your device\n• Try using a different browser (Chrome recommended)\n• Move closer to a window or outdoors`
           : errorMessage
       };
@@ -217,14 +240,14 @@ export function CameraGPSCapture({
       const gpsResult = await captureGPS();
       if (!gpsResult.success) {
         setGpsError(gpsResult.error || 'GPS failed');
-        
+
         // If we have coordinates but low accuracy, allow continue anyway
         if (gpsResult.coordinates) {
           setLowAccuracyGps(gpsResult.coordinates);
           setShowContinueAnyway(true);
           setPhoto(photoResult.photo!);
         }
-        
+
         throw new Error(gpsResult.error);
       }
 
@@ -232,7 +255,7 @@ export function CameraGPSCapture({
       setPhoto(photoResult.photo!);
       setGps(gpsResult.coordinates!);
       onCapture(photoResult.photo!, gpsResult.coordinates!);
-      
+
       // Stop camera
       stopCamera();
     } catch (err: any) {
@@ -352,7 +375,7 @@ export function CameraGPSCapture({
                 muted
                 className="w-full h-full object-cover"
               />
-              
+
               {/* Camera Guidelines */}
               {isCameraActive && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -378,7 +401,7 @@ export function CameraGPSCapture({
                 alt="Captured photo"
                 className="w-full h-full object-cover"
               />
-              
+
               {/* Success Overlay */}
               {gps && (
                 <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full flex items-center gap-2">
