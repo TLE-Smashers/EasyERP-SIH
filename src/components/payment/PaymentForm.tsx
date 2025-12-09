@@ -494,15 +494,17 @@ export function PaymentForm({
           )}
           <Button type="submit" disabled={isLoading || totalAmount === 0}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {selectedPaymentMethod === 'razorpay' ? (
+            {isLoading ? (
+              'Processing...'
+            ) : selectedPaymentMethod === 'razorpay' ? (
               <>
                 <CreditCard className="mr-2 h-4 w-4" />
-                Generate Payment Link
+                Pay with Razorpay
               </>
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                Create Payment
+                Create Payment Record
               </>
             )}
           </Button>
