@@ -211,20 +211,6 @@ export default async function HostelDashboardPage() {
           </CardContent>
         </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>
-            Latest hostel application updates and allocations
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-sm text-muted-foreground">
-            View detailed applications in the Applications section above.
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

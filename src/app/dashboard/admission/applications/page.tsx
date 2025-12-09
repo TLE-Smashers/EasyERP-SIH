@@ -1,9 +1,12 @@
 import { Suspense } from "react";
 import { revalidatePath } from "next/cache";
+import Link from "next/link";
 import { getApplications } from "@/actions/admission/getApplications";
 import { ApplicationsTable, type Application } from "@/components/admission/ApplicationsTable";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 // Make this page dynamic
 export const dynamic = "force-dynamic";
@@ -51,10 +54,18 @@ function ApplicationsLoading() {
 export default function ApplicationsPage() {
   return (
     <div className="flex-1 space-y-6 overflow-x-hidden">
-      <PageHeader
-        title="Applications"
-        description="View and manage all admission applications. Click on any row to view details and take actions."
-      />
+      <div className="flex items-center justify-between">
+        <PageHeader
+          title="Applications"
+          description="View and manage all admission applications. Click on any row to view details and take actions."
+        />
+        <Link href="/dashboard/admission/new">
+          <Button size="lg" className="gap-2">
+            <Plus className="h-5 w-5" />
+            New Application
+          </Button>
+        </Link>
+      </div>
 
       <div className="bg-card rounded-lg border shadow-sm">
         <div className="overflow-x-auto">

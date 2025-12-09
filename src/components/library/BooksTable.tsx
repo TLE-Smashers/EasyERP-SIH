@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, BookOpen } from "lucide-react";
+import { Search, BookOpen, Download } from "lucide-react";
 
 interface BooksTableProps {
   books: Book[];
@@ -46,6 +46,36 @@ export function BooksTable({ books, onRequestBook, onNotifyMe, studentMode = tru
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+
+  // CSV Export function
+  const exportToCSV = () => {
+    const headers = ['Title', 'Author', 'ISBN', 'Category', 'Publisher', 'Rack Number', 'Total Copies', 'Available Copies'];
+    const csvData = books.map(book => [
+      book.title,
+      book.author,
+      book.isbn,
+      book.category,
+      book.publisher,
+      book.rackNumber,
+      book.totalCopies,
+      book.availableCopies
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => row.map(cell => `\"${cell}\"`).join(','))
+    ].join('\\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `books_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const columns: ColumnDef<Book>[] = [
     {
@@ -193,6 +223,10 @@ export function BooksTable({ books, onRequestBook, onNotifyMe, studentMode = tru
             ))}
           </SelectContent>
         </Select>
+        <Button variant="outline" onClick={exportToCSV} className="gap-2">
+          <Download className="h-4 w-4" />
+          Export CSV
+        </Button>
       </div>
 
       {/* Table */}
