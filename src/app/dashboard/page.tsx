@@ -4,12 +4,12 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getApplicationStats } from "@/actions/admission/getApplications";
-import { 
-  GraduationCap, 
-  Wallet, 
-  Hotel, 
-  Library, 
-  Users, 
+import {
+  GraduationCap,
+  Wallet,
+  Hotel,
+  Library,
+  Users,
   BookOpen,
   ArrowRight,
   TrendingUp,
@@ -23,7 +23,8 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 
 export default async function DashboardPage() {
   const session = await auth();
-  
+  console.log('Dashboard access - Session: super admin login', session);
+
   if (!session?.user) {
     redirect("/auth/signin");
   }
@@ -35,7 +36,9 @@ export default async function DashboardPage() {
 
   // Only admin users see the overview dashboard
   // Other roles MUST be redirected to their specific module dashboards
-  if (userRole === "librarian") {
+  if (userRole === "super-admin") {
+    redirect("/dashboard/super-admin");
+  } else if (userRole === "librarian") {
     redirect("/dashboard/library");
   } else if (userRole === "admission") {
     redirect("/dashboard/admission");
@@ -127,8 +130,8 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-1 flex-col gap-6">
       {/* Header */}
-      <DashboardHeader 
-        title="Admin Dashboard" 
+      <DashboardHeader
+        title="Admin Dashboard"
         description={`Welcome back, ${session.user.name}. Here's your system overview.`}
       />
 
@@ -189,7 +192,7 @@ export default async function DashboardPage() {
       {/* Charts Row 2 */}
       <div className="grid gap-4 md:grid-cols-3">
         <AdmissionChart stats={admissionStats} />
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Module Usage</CardTitle>
@@ -203,9 +206,9 @@ export default async function DashboardPage() {
                   <span className="font-medium">{admissionStats.total}</span>
                 </div>
                 <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-blue-500 to-blue-600" 
-                    style={{width: `${admissionStats.total > 0 ? Math.min((admissionStats.total / (admissionStats.total + 10)) * 100, 100) : 0}%`}}
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-500 to-blue-600"
+                    style={{ width: `${admissionStats.total > 0 ? Math.min((admissionStats.total / (admissionStats.total + 10)) * 100, 100) : 0}%` }}
                   />
                 </div>
               </div>
@@ -215,7 +218,7 @@ export default async function DashboardPage() {
                   <span className="font-medium">0</span>
                 </div>
                 <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-orange-500 to-orange-600" style={{width: "0%"}} />
+                  <div className="h-full bg-gradient-to-r from-orange-500 to-orange-600" style={{ width: "0%" }} />
                 </div>
               </div>
               <div>
@@ -224,7 +227,7 @@ export default async function DashboardPage() {
                   <span className="font-medium">0</span>
                 </div>
                 <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-green-500 to-green-600" style={{width: "0%"}} />
+                  <div className="h-full bg-gradient-to-r from-green-500 to-green-600" style={{ width: "0%" }} />
                 </div>
               </div>
               <div>
@@ -233,7 +236,7 @@ export default async function DashboardPage() {
                   <span className="font-medium">0</span>
                 </div>
                 <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-purple-500 to-purple-600" style={{width: "0%"}} />
+                  <div className="h-full bg-gradient-to-r from-purple-500 to-purple-600" style={{ width: "0%" }} />
                 </div>
               </div>
             </div>

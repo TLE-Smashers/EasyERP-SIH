@@ -1,13 +1,57 @@
 import { auth } from "@/lib/auth/auth"
+import { NextResponse } from "next/server"
+import { getStudentProfileByEmail } from "@/actions/student/getStudentProfile"
 
-export default auth((req) => {
+export default auth(async (req) => {
   const isLoggedIn = !!req.auth
   const { pathname } = req.nextUrl
 
-  // Allow access to dashboard routes if logged in
+  // Redirect to login if not authenticated
   if (pathname.startsWith('/dashboard') && !isLoggedIn) {
     const loginUrl = new URL('/login', req.url)
     return Response.redirect(loginUrl)
+  }
+
+  // Super Admin access control
+  if (isLoggedIn && pathname.startsWith('/dashboard/super-admin')) {
+    const userRole = req.auth?.user?.role
+    
+    // Only super-admin role can access super-admin routes
+    if (userRole !== 'super-admin') {
+      const dashboardUrl = new URL('/dashboard', req.url)
+      return NextResponse.redirect(dashboardUrl)
+    }
+  }
+
+  // Check if user is a student and redirect based on graduation status
+  if (isLoggedIn && req.auth?.user?.role === 'student') {
+    const userEmail = req.auth.user.email
+
+    // Fetch student profile to check status
+    if (userEmail) {
+      try {
+        const studentProfile = await getStudentProfileByEmail(userEmail)
+
+        if (studentProfile.success && studentProfile.data) {
+          const isGraduated = studentProfile.data.status === 'graduated'
+
+          // Redirect graduated students to alumni dashboard
+          if (isGraduated && pathname.startsWith('/dashboard/student')) {
+            const alumniUrl = new URL('/dashboard/alumni', req.url)
+            return NextResponse.redirect(alumniUrl)
+          }
+
+          // Redirect active students away from alumni dashboard
+          if (!isGraduated && pathname.startsWith('/dashboard/alumni')) {
+            const studentUrl = new URL('/dashboard/student', req.url)
+            return NextResponse.redirect(studentUrl)
+          }
+        }
+      } catch (error) {
+        console.error('Error checking student status:', error)
+        // Continue without redirect on error
+      }
+    }
   }
 
   // User is logged in, allow access

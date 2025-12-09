@@ -100,7 +100,7 @@ export function PageHeader({
     <div className={cn("", className)}>
       {/* Back Button */}
       {(backLabel || backHref) && (
-        <div className="-mb-2">
+        <div className="mb-4">
           <Button
             variant="ghost"
             size="sm"
