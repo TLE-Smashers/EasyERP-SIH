@@ -4,79 +4,75 @@ import * as React from "react";
 import {
   Wallet,
   Calendar,
-  Receipt,
-  TrendingUp,
-  CheckCircle2,
   AlertTriangle,
-  type LucideIcon,
+  CreditCard,
 } from "lucide-react";
-import Link from "next/link";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStudentProfile } from "@/hooks/use-student-profile";
+import { CreatePaymentSheet } from "@/components/payment/CreatePaymentSheet";
+import { fetchStudentPaymentPeriodsAction, fetchAllPeriodsAction } from "@/actions/paymentPeriod/paymentPeriodActions";
+import { useSession } from "next-auth/react";
+import type { PaymentPeriod } from "@/types/paymentPeriod";
 
-const currency = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-  maximumFractionDigits: 0,
-});
 
-const MOCK_FEE_ITEMS = [
-  {
-    label: "Tuition Fee",
-    amount: 60000,
-    status: "paid",
-    paidOn: "2025-08-01",
-    reference: "TXN87412",
-  },
-  {
-    label: "Hostel & Mess",
-    amount: 28000,
-    status: "paid",
-    paidOn: "2025-09-10",
-    reference: "TXN88310",
-  },
-  {
-    label: "Exam Fee",
-    amount: 4000,
-    status: "pending",
-    dueDate: "2025-11-30",
-  },
-  {
-    label: "Library & Activity",
-    amount: 2500,
-    status: "pending",
-    dueDate: "2025-12-15",
-  },
-] as const;
-
-type FeeItem = (typeof MOCK_FEE_ITEMS)[number];
 
 export default function StudentFeeStatusPage() {
   const { student, isLoading, error } = useStudentProfile();
+  const { data: session } = useSession();
+  const [paymentPeriods, setPaymentPeriods] = React.useState<PaymentPeriod[]>([]);
+  const [loadingPeriods, setLoadingPeriods] = React.useState(true);
+  const [showPaymentSheet, setShowPaymentSheet] = React.useState(false);
+  const [selectedPeriod, setSelectedPeriod] = React.useState<PaymentPeriod | null>(null);
 
-  const summary = React.useMemo(() => {
-    const total = MOCK_FEE_ITEMS.reduce((sum, item) => sum + item.amount, 0);
-    const paid = MOCK_FEE_ITEMS.filter((item) => item.status === "paid").reduce(
-      (sum, item) => sum + item.amount,
-      0
-    );
-    const pending = total - paid;
-
-    const nextDue = MOCK_FEE_ITEMS.find((item) => item.status === "pending")?.dueDate;
-
-    return {
-      total,
-      paid,
-      pending,
-      completion: total ? Math.round((paid / total) * 100) : 0,
-      nextDue,
+  // Fetch active payment periods
+  React.useEffect(() => {
+    const fetchPeriods = async () => {
+      // Wait for student profile loading to complete
+      if (isLoading) return;
+      
+      try {
+        // If student profile exists, fetch targeted periods
+        if (student?.academicInfo?.course && student?.academicInfo?.branch) {
+          const result = await fetchStudentPaymentPeriodsAction(
+            student.academicInfo.course,
+            student.academicInfo.branch,
+            student.academicInfo.year || 1
+          );
+          
+          if (result.success) {
+            setPaymentPeriods(result.periods || []);
+          }
+        } else {
+          // If no student profile, fetch ALL periods and filter for enabled ones
+          const result = await fetchAllPeriodsAction();
+          
+          if (result.success) {
+            // Filter for enabled periods only
+            const now = new Date();
+            const activePeriods = (result.periods || []).filter((period) => {
+              if (period.status !== 'enabled') return false;
+              const startDate = new Date(period.startDate);
+              const endDate = new Date(period.endDate);
+              return now >= startDate && now <= endDate;
+            });
+            setPaymentPeriods(activePeriods);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching payment periods:', error);
+      } finally {
+        setLoadingPeriods(false);
+      }
     };
-  }, []);
+
+    fetchPeriods();
+  }, [student, isLoading]);
+
+
 
   if (isLoading) {
     return (
@@ -88,23 +84,8 @@ export default function StudentFeeStatusPage() {
     );
   }
 
-  if (!student) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Fee Status</h1>
-          <p className="text-muted-foreground">
-            Track payments and upcoming dues
-          </p>
-        </div>
-        <Card>
-          <CardContent className="py-10 text-center text-muted-foreground">
-            {error || "Your profile data is unavailable. Please contact the accounts team."}
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Don't block the page if student profile is not found - payment periods can still be shown
+  // We'll just not show the CreatePaymentSheet which requires full student profile
 
   return (
     <div className="space-y-6">
@@ -115,166 +96,148 @@ export default function StudentFeeStatusPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      {/* Profile Warning */}
+      {!student && !isLoading && (
+        <Card className="border-orange-500 bg-orange-50 dark:bg-orange-950/20">
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-orange-900 dark:text-orange-200">
+                  Profile Not Found
+                </h3>
+                <p className="text-sm text-orange-800 dark:text-orange-300 mt-1">
+                  {error || "Your student profile is not set up yet. You can view available payment periods below, but you'll need to complete your profile to make payments. Please contact the accounts team."}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Active Payment Periods */}
+      {!loadingPeriods && paymentPeriods.length > 0 && (
+        <Card className="border-primary">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              Available Payment Options
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {paymentPeriods.map((period) => {
+                const daysLeft = Math.ceil(
+                  (new Date(period.endDate).getTime() - new Date().getTime()) /
+                    (1000 * 60 * 60 * 24)
+                );
+
+                return (
+                  <Card key={period.id} className="border-2">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <Badge variant="outline" className="capitalize mb-2">
+                            {period.type}
+                          </Badge>
+                          <CardTitle className="text-lg">{period.title}</CardTitle>
+                        </div>
+                      </div>
+                      {period.description && (
+                        <p className="text-sm text-muted-foreground">
+                          {period.description}
+                        </p>
+                      )}
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm text-muted-foreground">Amount</span>
+                          <span className="text-2xl font-bold">
+                            ₹{period.totalAmount.toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs text-muted-foreground">
+                          <span>Academic Year: {period.academicYear}</span>
+                          {period.semester && <span>Semester: {period.semester}</span>}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-xs">
+                        <Calendar className="h-3 w-3" />
+                        <span className="text-muted-foreground">
+                          Due: {new Date(period.endDate).toLocaleDateString('en-IN')}
+                          {daysLeft > 0 && ` (${daysLeft} days left)`}
+                        </span>
+                      </div>
+
+                      <Button
+                        className="w-full"
+                        onClick={() => {
+                          setSelectedPeriod(period);
+                          setShowPaymentSheet(true);
+                        }}
+                      >
+                        Pay Now
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!loadingPeriods && paymentPeriods.length === 0 && (
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Wallet className="h-5 w-5" /> Overall Summary
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-3">
-              <SummaryTile label="Total" value={currency.format(summary.total)} />
-              <SummaryTile label="Paid" value={currency.format(summary.paid)} />
-              <SummaryTile label="Pending" value={currency.format(summary.pending)} />
-            </div>
-            <div>
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>Payment Completion</span>
-                <span>{summary.completion}%</span>
-              </div>
-              <Progress value={summary.completion} className="mt-2 h-2" />
-            </div>
-            {summary.nextDue && (
-              <div className="rounded-lg border bg-muted/40 p-3 text-sm">
-                <p className="font-medium text-foreground">Next due date</p>
-                <p className="text-muted-foreground flex items-center gap-2 mt-1">
-                  <Calendar className="h-4 w-4" />
-                  {formatDate(summary.nextDue)}
-                </p>
-              </div>
-            )}
+          <CardContent className="py-8 text-center text-muted-foreground">
+            <Wallet className="h-12 w-12 mx-auto mb-3 opacity-50" />
+            <p>No active payment periods available at the moment</p>
           </CardContent>
         </Card>
+      )}
 
-        <Card className="bg-gradient-to-br from-primary/5 via-background to-background">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" /> Action Center
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Complete your pending payments online or download the latest
-              statement for your records.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Button asChild>
-                <Link href="/dashboard/accounts/fees">Pay Now</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/dashboard/accounts/receipts">Download Receipt</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Receipt className="h-5 w-5" /> Fee Breakdown
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {MOCK_FEE_ITEMS.map((item) => (
-            <div
-              key={item.label}
-              className="rounded-lg border p-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
-            >
-              <div>
-                <p className="text-base font-medium text-foreground">
-                  {item.label}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {item.status === "paid"
-                    ? `Paid on ${formatDate(item.paidOn)} • Ref ${item.reference}`
-                    : `Due by ${formatDate(item.dueDate)}`}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <p className="text-lg font-semibold">
-                  {currency.format(item.amount)}
-                </p>
-                <Badge variant={item.status === "paid" ? "default" : "secondary"}>
-                  {item.status === "paid" ? "Paid" : "Pending"}
-                </Badge>
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5" /> Payment Status
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
-          <StatusCard
-            title="Cleared Payments"
-            description="Tuition fee and hostel dues are fully settled for the current semester."
-            icon={CheckCircle2}
-            tone="success"
-          />
-          <StatusCard
-            title="Pending Items"
-            description="Exam and library fees remain pending. Complete payment before the due date to avoid late charges."
-            icon={AlertTriangle}
-            tone="warning"
-          />
-        </CardContent>
-      </Card>
+      {/* Payment Sheet */}
+      {selectedPeriod && (
+        <CreatePaymentSheet
+          open={showPaymentSheet}
+          onOpenChange={setShowPaymentSheet}
+          paymentType={selectedPeriod.type as any}
+          paymentContext="admission"
+          defaultFeeBreakdown={{
+            tuitionFee: selectedPeriod.tuitionFee,
+            amalgamatedFund: selectedPeriod.amalgamatedFund,
+            sportsFeeUniversityShare: selectedPeriod.sportsFee,
+            cautionMoney: selectedPeriod.cautionMoney,
+            transferCertificateFee: selectedPeriod.transferCertificateFee,
+            libraryCardReissueFee: selectedPeriod.libraryCardReissueFee,
+            penaltyFee: selectedPeriod.penaltyFee,
+            otherFees: selectedPeriod.otherFees,
+            transactionCharges: selectedPeriod.transactionCharges,
+          }}
+          contextData={{
+            studentName: student?.personalInfo?.fullName || student?.fullName || session?.user?.name || '',
+            fatherName: student?.personalInfo?.guardianName || student?.fatherName || '',
+            email: student?.personalInfo?.email || student?.email || session?.user?.email || '',
+            mobile: student?.personalInfo?.mobileNumber || student?.mobileNumber || student?.contactNumber || '',
+            rollNumber: student?.academicInfo?.rollNumber || student?.rollNumber || '',
+            course: student?.academicInfo?.course || student?.course || '',
+            branch: student?.academicInfo?.branch || student?.branch || '',
+            category: student?.category || 'General',
+            academicYear: selectedPeriod.academicYear,
+            semester: selectedPeriod.semester,
+            periodId: selectedPeriod.id,
+            studentId: student?.academicInfo?.studentId || student?.studentId || student?.rollNumber || '',
+          }}
+          createdBy={session?.user?.email || 'student'}
+          onSuccess={() => {
+            setShowPaymentSheet(false);
+            setSelectedPeriod(null);
+          }}
+        />
+      )}
     </div>
   );
 }
 
-function SummaryTile({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border bg-card/70 p-3 text-center">
-      <p className="text-xs uppercase tracking-wide text-muted-foreground">
-        {label}
-      </p>
-      <p className="text-lg font-semibold text-foreground mt-1">{value}</p>
-    </div>
-  );
-}
-
-function StatusCard({
-  title,
-  description,
-  icon: Icon,
-  tone,
-}: {
-  title: string;
-  description: string;
-  icon: LucideIcon;
-  tone: "success" | "warning";
-}) {
-  const toneClasses =
-    tone === "success"
-      ? "border-green-200 bg-green-50 text-green-900"
-      : "border-amber-200 bg-amber-50 text-amber-900";
-
-  return (
-    <div className={`rounded-lg border p-4 ${toneClasses}`}>
-      <div className="flex items-center gap-2 font-medium">
-        <Icon className="h-4 w-4" />
-        {title}
-      </div>
-      <p className="text-sm mt-2">{description}</p>
-    </div>
-  );
-}
-
-function formatDate(value?: string) {
-  if (!value) return "-";
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return value;
-  return parsed.toLocaleDateString("en-US", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}

@@ -30,12 +30,8 @@ export default function JobReferralNotices({
 
         async function loadReferrals() {
             try {
-                console.log("[JobReferralNotices] Starting to load referrals...");
-                const data = await getApprovedReferrals();
-                console.log("[JobReferralNotices] Received data:", data);
-                console.log("[JobReferralNotices] Data length:", data.length);
+                const data = await getJobReferrals();
                 setReferrals(data.slice(0, maxDisplay));
-                console.log("[JobReferralNotices] Set referrals state with", data.slice(0, maxDisplay).length, "items");
             } catch (error) {
                 console.error("Error loading job referrals:", error);
             } finally {
@@ -51,7 +47,6 @@ export default function JobReferralNotices({
     }
 
     if (isLoading) {
-        console.log("[JobReferralNotices] Component is loading...");
         return (
             <div className="space-y-3">
                 {showHeader && <Skeleton className="h-6 w-48" />}
@@ -61,11 +56,7 @@ export default function JobReferralNotices({
         );
     }
 
-    console.log("[JobReferralNotices] Rendering with referrals.length =", referrals.length);
-    console.log("[JobReferralNotices] Referrals state:", referrals);
-
     if (referrals.length === 0) {
-        console.log("[JobReferralNotices] No referrals, showing empty state");
         return (
             <div className="space-y-4">
                 {showHeader && (
@@ -81,8 +72,6 @@ export default function JobReferralNotices({
             </div>
         );
     }
-
-    console.log("[JobReferralNotices] About to render", referrals.length, "referral cards");
 
     return (
         <div className="space-y-4">

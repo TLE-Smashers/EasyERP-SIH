@@ -4,6 +4,7 @@ import * as React from "react";
 import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   BookOpen,
   Calendar,
@@ -13,24 +14,32 @@ import {
   GraduationCap,
   Clock,
   Award,
-  FileText
+  FileText,
+  CreditCard,
+  Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { getStudentAttendanceByEmail } from "@/actions/student/getStudentAttendance";
 import { getStudentExamScores } from "@/actions/student/getStudentExamScores";
+import { fetchStudentPaymentPeriodsAction } from "@/actions/paymentPeriod/paymentPeriodActions";
+import { getStudentProfileByEmail } from "@/actions/student/getStudentProfile";
+import type { PaymentPeriod } from "@/types/paymentPeriod";
 import JobReferralNotices from "@/components/job-referral-notices";
 
 export default function StudentDashboardPage() {
   const { data: session } = useSession();
   const [attendancePercentage, setAttendancePercentage] = React.useState<number | null>(null);
   const [averagePercentage, setAveragePercentage] = React.useState<number | null>(null);
+  const [paymentPeriods, setPaymentPeriods] = React.useState<PaymentPeriod[]>([]);
+  const [loadingPeriods, setLoadingPeriods] = React.useState(true);
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
     setMounted(true);
     loadAttendance();
     loadResults();
+    loadPaymentPeriods();
   }, [session]);
 
   async function loadAttendance() {
@@ -56,6 +65,36 @@ export default function StudentDashboardPage() {
       }
     } catch (error) {
       console.error("Error loading results:", error);
+    }
+  }
+
+  async function loadPaymentPeriods() {
+    if (!session?.user?.email) return;
+    
+    try {
+      // Get student profile first
+      const profileResult = await getStudentProfileByEmail(session.user.email);
+      if (!profileResult.success || !profileResult.data) {
+        setLoadingPeriods(false);
+        return;
+      }
+
+      const student = profileResult.data;
+      
+      // Fetch payment periods
+      const result = await fetchStudentPaymentPeriodsAction(
+        student.course || '',
+        student.branch || '',
+        student.currentYear || 1
+      );
+      
+      if (result.success) {
+        setPaymentPeriods(result.periods || []);
+      }
+    } catch (error) {
+      console.error('Error loading payment periods:', error);
+    } finally {
+      setLoadingPeriods(false);
     }
   }
 
@@ -136,6 +175,135 @@ export default function StudentDashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Payment Periods Section */}
+        {!loadingPeriods && paymentPeriods.length > 0 && (
+          <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <CreditCard className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">Pay Your Fees</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      {paymentPeriods.length} payment {paymentPeriods.length === 1 ? 'option' : 'options'} available
+                    </p>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/dashboard/student/fees">
+                    View Details <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {paymentPeriods.slice(0, 3).map((period) => {
+                  const daysLeft = Math.ceil(
+                    (new Date(period.endDate).getTime() - new Date().getTime()) /
+                      (1000 * 60 * 60 * 24)
+                  );
+                  const isUrgent = daysLeft <= 7 && daysLeft > 0;
+                  const isExpiringSoon = daysLeft <= 14 && daysLeft > 7;
+
+                  return (
+                    <Card 
+                      key={period.id} 
+                      className={`border-2 hover:shadow-lg transition-all ${
+                        isUrgent ? 'border-red-500/50 bg-red-50/50 dark:bg-red-950/20' :
+                        isExpiringSoon ? 'border-orange-500/50 bg-orange-50/50 dark:bg-orange-950/20' :
+                        'border-primary/30'
+                      }`}
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between mb-2">
+                          <Badge 
+                            variant="outline" 
+                            className="capitalize"
+                          >
+                            {period.type}
+                          </Badge>
+                          {isUrgent && (
+                            <Badge variant="destructive" className="text-xs">
+                              Urgent
+                            </Badge>
+                          )}
+                          {isExpiringSoon && !isUrgent && (
+                            <Badge variant="secondary" className="text-xs bg-orange-500 text-white">
+                              Soon
+                            </Badge>
+                          )}
+                        </div>
+                        <CardTitle className="text-base line-clamp-1">
+                          {period.title}
+                        </CardTitle>
+                        {period.description && (
+                          <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                            {period.description}
+                          </p>
+                        )}
+                      </CardHeader>
+                      <CardContent className="space-y-3 pt-0">
+                        <div className="flex items-baseline justify-between">
+                          <span className="text-xs text-muted-foreground">Amount</span>
+                          <span className="text-xl font-bold text-primary">
+                            ₹{period.totalAmount.toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-xs">
+                          <Calendar className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-muted-foreground">
+                            Due: {new Date(period.endDate).toLocaleDateString('en-IN', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric'
+                            })}
+                          </span>
+                        </div>
+                        
+                        {daysLeft > 0 && (
+                          <div className={`text-xs font-medium ${
+                            isUrgent ? 'text-red-600 dark:text-red-400' :
+                            isExpiringSoon ? 'text-orange-600 dark:text-orange-400' :
+                            'text-green-600 dark:text-green-400'
+                          }`}>
+                            {daysLeft} {daysLeft === 1 ? 'day' : 'days'} left
+                          </div>
+                        )}
+
+                        <Button 
+                          className="w-full mt-2" 
+                          size="sm"
+                          variant={isUrgent ? "destructive" : "default"}
+                          asChild
+                        >
+                          <Link href="/dashboard/student/fees">
+                            <Wallet className="mr-2 h-4 w-4" />
+                            Pay Now
+                          </Link>
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+              {paymentPeriods.length > 3 && (
+                <div className="mt-4 text-center">
+                  <Button variant="outline" asChild>
+                    <Link href="/dashboard/student/fees">
+                      View All {paymentPeriods.length} Payment Options
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Main Content Grid */}
         <div className="grid gap-6 md:grid-cols-2">

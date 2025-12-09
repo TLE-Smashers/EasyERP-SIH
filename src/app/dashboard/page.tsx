@@ -30,9 +30,6 @@ export default async function DashboardPage() {
 
   const userRole = (session.user as any).role;
 
-  // Log for debugging
-  console.log('Dashboard access - User role:', userRole);
-
   // Only admin users see the overview dashboard
   // Other roles MUST be redirected to their specific module dashboards
   if (userRole === "super-admin") {

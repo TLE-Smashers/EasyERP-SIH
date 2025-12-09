@@ -342,6 +342,7 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
       items: [
         { title: "Fee Collection", url: "/dashboard/accounts/fees" },
         { title: "Receipts", url: "/dashboard/accounts/receipts" },
+        { title: "Payment Periods", url: "/dashboard/accounts/payment-periods" },
       ],
     },
   ],

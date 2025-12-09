@@ -25,7 +25,6 @@ export async function createBackup(
 
     // Fetch actual data based on backup type
     if (type === "Full System" || type === "Admission Data") {
-      console.log("📥 Fetching admission data from Google Sheets...");
       const admissionData = await fetchAllApplications();
       backupData.admissions = admissionData;
       dataSize += JSON.stringify(admissionData).length;
@@ -34,7 +33,6 @@ export async function createBackup(
     if (type === "Full System" || type === "Student Records") {
       // Add student data when available
       backupData.students = [];
-      console.log("📥 Student data would be fetched here...");
     }
 
     if (type === "Full System") {
@@ -43,7 +41,6 @@ export async function createBackup(
       backupData.library = [];
       backupData.hostel = [];
       backupData.payments = [];
-      console.log("📥 Full system data would be fetched here...");
     }
 
     // Calculate actual size
@@ -69,7 +66,6 @@ export async function createBackup(
 
     mockBackups.unshift(backup);
 
-    console.log(`✅ Backup created: ${backup.size}`);
     return backup;
   } catch (error) {
     console.error("Error creating backup:", error);
