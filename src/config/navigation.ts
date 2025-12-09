@@ -399,6 +399,15 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
       ],
     },
     {
+      title: "Faculty Consultation",
+      url: "#",
+      icon: UserCheck,
+      items: [
+        { title: "Request Faculty", url: "/dashboard/student/faculty-request" },
+        { title: "My Requests", url: "/dashboard/student/faculty-request/my-requests" },
+      ],
+    },
+    {
       title: "Exams",
       url: "#",
       icon: Calendar,
@@ -452,6 +461,15 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
       items: [
         { title: "Browse Resources", url: "/dashboard/shared-resources" },
         { title: "Upload Resources", url: "/dashboard/shared-resources/upload" },
+      ],
+    },
+    {
+      title: "Student Requests",
+      url: "#",
+      icon: MessageCircle,
+      items: [
+        { title: "Pending Requests", url: "/dashboard/faculty/requests" },
+        { title: "All Requests", url: "/dashboard/faculty/requests/all" },
       ],
     },
     {
