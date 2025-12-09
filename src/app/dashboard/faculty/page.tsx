@@ -53,14 +53,6 @@ export default function FacultyPage() {
                 getFaculty(),
                 getFacultyStats(),
             ]);
-            console.log("[Faculty Page] Loaded faculty count:", facultyData.length);
-            if (facultyData.length > 0) {
-                console.log("[Faculty Page] First faculty sample:", {
-                    id: facultyData[0].id,
-                    facultyId: facultyData[0].facultyId,
-                    name: facultyData[0].name
-                });
-            }
             setFaculty(facultyData);
             setStats(statsData);
         } catch (error) {
@@ -77,7 +69,6 @@ export default function FacultyPage() {
     }
 
     function handleEdit(id: string) {
-        console.log("[Faculty Page] Edit clicked for ID:", id);
         router.push(`/dashboard/faculty/edit/${id}`);
     }
 

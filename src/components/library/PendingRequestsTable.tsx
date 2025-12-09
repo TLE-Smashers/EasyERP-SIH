@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, Clock, Download } from "lucide-react";
 import { toast } from "sonner";
 import { approveRequest, rejectRequest } from "@/actions/library/approveRequest";
 import { formatDateForDisplay } from "@/lib/dateUtils";
@@ -38,6 +38,38 @@ export function PendingRequestsTable({ requests, onUpdate }: PendingRequestsTabl
   const [rejectionReason, setRejectionReason] = useState("");
   const [loading, setLoading] = useState(false);
   const [approvedCode, setApprovedCode] = useState<string | null>(null);
+
+  const exportToCSV = () => {
+    const headers = ['Request ID', 'Student Name', 'Roll Number', 'Email', 'Book Title', 'Book Author', 'Request Date', 'Course', 'Branch', 'Year'];
+    const csvRows = [
+      headers.join(','),
+      ...requests.map(request =>
+        [
+          `"${request.requestId}"`,
+          `"${request.studentName}"`,
+          `"${request.rollNumber || request.studentId}"`,
+          `"${request.email}"`,
+          `"${request.bookTitle}"`,
+          `"${request.bookAuthor}"`,
+          `"${formatDateForDisplay(request.requestDate)}"`,
+          `"${request.course}"`,
+          `"${request.branch}"`,
+          `"${request.year}"`
+        ].join(',')
+      )
+    ];
+
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pending-requests-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
 
   const handleApprove = async (request: BookRequest) => {
     setLoading(true);
@@ -101,6 +133,13 @@ export function PendingRequestsTable({ requests, onUpdate }: PendingRequestsTabl
 
   return (
     <>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">{requests.length} Pending Request(s)</h3>
+        <Button onClick={exportToCSV} variant="outline" size="sm">
+          <Download className="mr-2 h-4 w-4" />
+          Export CSV
+        </Button>
+      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>

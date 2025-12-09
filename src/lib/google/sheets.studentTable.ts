@@ -70,8 +70,7 @@ export async function fetchStudentsFromSheet(): Promise<StudentRecord[]> {
     });
 
     const rows = response.data.values || [];
-    console.log(`Fetched ${rows.length} rows from Student sheet`);
-    
+
     if (rows.length === 0) {
       console.warn("No data found in Student sheet");
       return [];

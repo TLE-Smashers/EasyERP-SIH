@@ -141,38 +141,38 @@ export function PaymentForm({
     defaultValues:
       paymentContext === 'admission'
         ? {
-            paymentContext: 'admission',
-            studentName: initialData?.studentName || '',
-            fatherName: initialData?.fatherName || '',
-            email: initialData?.email || '',
-            mobile: initialData?.mobile || '',
-            rollNumber: initialData?.rollNumber || '',
-            course: initialData?.course || '',
-            branch: initialData?.branch || '',
-            category: initialData?.category || 'General',
-            paymentType: initialData?.paymentType || 'admission',
-            academicYear: initialData?.academicYear || new Date().getFullYear() + '-' + (new Date().getFullYear() + 1),
-            semester: initialData?.semester,
-            paymentMethod: initialData?.paymentMethod || 'razorpay',
-            notes: initialData?.notes || '',
-          }
+          paymentContext: 'admission',
+          studentName: initialData?.studentName || '',
+          fatherName: initialData?.fatherName || '',
+          email: initialData?.email || '',
+          mobile: initialData?.mobile || '',
+          rollNumber: initialData?.rollNumber || '',
+          course: initialData?.course || '',
+          branch: initialData?.branch || '',
+          category: initialData?.category || 'General',
+          paymentType: initialData?.paymentType || 'admission',
+          academicYear: initialData?.academicYear || new Date().getFullYear() + '-' + (new Date().getFullYear() + 1),
+          semester: initialData?.semester,
+          paymentMethod: initialData?.paymentMethod || 'razorpay',
+          notes: initialData?.notes || '',
+        }
         : {
-            paymentContext: 'hostel',
-            studentName: initialData?.studentName || '',
-            email: initialData?.email || '',
-            mobile: initialData?.mobile || '',
-            category: initialData?.category || 'General',
-            paymentType: 'hostel',
-            paymentMethod: initialData?.paymentMethod || 'razorpay',
-            notes: initialData?.notes || '',
-            // Optional fields for hostel context
-            fatherName: '',
-            rollNumber: '',
-            course: '',
-            branch: '',
-            academicYear: '',
-            semester: undefined,
-          },
+          paymentContext: 'hostel',
+          studentName: initialData?.studentName || '',
+          email: initialData?.email || '',
+          mobile: initialData?.mobile || '',
+          category: initialData?.category || 'General',
+          paymentType: 'hostel',
+          paymentMethod: initialData?.paymentMethod || 'razorpay',
+          notes: initialData?.notes || '',
+          // Optional fields for hostel context
+          fatherName: '',
+          rollNumber: '',
+          course: '',
+          branch: '',
+          academicYear: '',
+          semester: undefined,
+        },
   });
 
   const selectedPaymentMethod = form.watch('paymentMethod');
@@ -247,7 +247,7 @@ export function PaymentForm({
       {/* Payment Type & Context */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Payment Details</h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <Label htmlFor="paymentType">Payment Type *</Label>
@@ -416,7 +416,7 @@ export function PaymentForm({
         <FeeBreakdownForm
           value={feeBreakdown}
           onChange={setFeeBreakdown}
-          disabled={isViewMode || isLoading}
+          disabled={isViewMode || isLoading || paymentContext === 'hostel'}
           showTransactionCharges={selectedPaymentMethod === 'razorpay'}
           context={paymentContext}
         />
@@ -494,15 +494,17 @@ export function PaymentForm({
           )}
           <Button type="submit" disabled={isLoading || totalAmount === 0}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {selectedPaymentMethod === 'razorpay' ? (
+            {isLoading ? (
+              'Processing...'
+            ) : selectedPaymentMethod === 'razorpay' ? (
               <>
                 <CreditCard className="mr-2 h-4 w-4" />
-                Generate Payment Link
+                Pay with Razorpay
               </>
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                Create Payment
+                Create Payment Record
               </>
             )}
           </Button>

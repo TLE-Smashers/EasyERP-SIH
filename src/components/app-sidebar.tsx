@@ -80,10 +80,6 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
   const { state, toggleSidebar } = useSidebar()
   const isCollapsed = state === "collapsed"
 
-  // Debug logging
-  console.log('Sidebar - User role:', user?.role);
-  console.log('Sidebar - Nav items count:', navItems.length);
-
   // Default user data if not provided
   const userData = user || {
     name: "Guest User",

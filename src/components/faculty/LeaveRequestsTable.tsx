@@ -27,7 +27,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { LeaveRequest, LeaveStatus } from "@/types/leave";
 import { format } from "date-fns";
-import { Check, X, Eye, Loader2, Calendar, Clock, FileText } from "lucide-react";
+import { Check, X, Eye, Loader2, Calendar, Clock, FileText, Download } from "lucide-react";
 import { approveLeaveRequest, rejectLeaveRequest } from "@/actions/faculty/leaveActions";
 import { toast } from "sonner";
 
@@ -46,6 +46,38 @@ export function LeaveRequestsTable({ requests, filterStatus = "All" }: LeaveRequ
     const filteredRequests = filterStatus === "All"
         ? requests
         : requests.filter(r => r.status === filterStatus);
+
+    const exportToCSV = () => {
+        const headers = ['Faculty ID', 'Faculty Name', 'Leave Type', 'Duration', 'Start Date', 'End Date', 'Total Days', 'Status', 'Applied On', 'Reason'];
+        const csvRows = [
+            headers.join(','),
+            ...filteredRequests.map(request =>
+                [
+                    `"${request.facultyId}"`,
+                    `"${request.facultyName}"`,
+                    `"${request.leaveType}"`,
+                    `"${request.duration}"`,
+                    `"${format(new Date(request.startDate), "yyyy-MM-dd")}"`,
+                    `"${format(new Date(request.endDate), "yyyy-MM-dd")}"`,
+                    `"${request.totalDays}"`,
+                    `"${request.status}"`,
+                    `"${format(new Date(request.appliedOn), "yyyy-MM-dd")}"`,
+                    `"${request.reason.replace(/"/g, '""')}"`
+                ].join(',')
+            )
+        ];
+
+        const csvContent = csvRows.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `leave-requests-${format(new Date(), "yyyy-MM-dd")}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    };
 
     const getStatusBadge = (status: LeaveStatus) => {
         const variants: Record<LeaveStatus, "default" | "secondary" | "destructive" | "outline"> = {
@@ -132,10 +164,18 @@ export function LeaveRequestsTable({ requests, filterStatus = "All" }: LeaveRequ
         <>
             <Card>
                 <CardHeader>
-                    <CardTitle>Leave Requests</CardTitle>
-                    <CardDescription>
-                        {filteredRequests.length} {filterStatus === "All" ? "" : filterStatus.toLowerCase()} request(s)
-                    </CardDescription>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle>Leave Requests</CardTitle>
+                            <CardDescription>
+                                {filteredRequests.length} {filterStatus === "All" ? "" : filterStatus.toLowerCase()} request(s)
+                            </CardDescription>
+                        </div>
+                        <Button onClick={exportToCSV} variant="outline" size="sm">
+                            <Download className="mr-2 h-4 w-4" />
+                            Export CSV
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <div className="rounded-md border">
