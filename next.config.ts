@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from 'next-intl/plugin';
 
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
 const nextConfig: NextConfig = {
-  /* config options here */
   // Disable source maps in development to avoid parsing errors
   productionBrowserSourceMaps: false,
   
@@ -42,11 +43,27 @@ const nextConfig: NextConfig = {
   // Reduce initial compile time
   swcMinify: true,
   
-  // Optimize image loading
+  // Optimize image loading with remote patterns
   images: {
     formats: ['image/avif', 'image/webp'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'artfulsheets.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.googleusercontent.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'drive.google.com',
+        pathname: '/**',
+      },
+    ],
   },
 };
 
-const withNextIntl = createNextIntlPlugin();
 export default withNextIntl(nextConfig);
