@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { WeeklyAttendanceHeatmap } from "@/components/dashboard/WeeklyAttendanceHeatmap";
-import { PerformanceTrendChart } from "@/components/dashboard/PerformanceTrendChart";
 import { FacultyTable } from "@/components/faculty/FacultyTable";
 import { FacultyDrawer } from "@/components/faculty/FacultyDrawer";
 import { getFaculty, getFacultyStats } from "@/actions/faculty/getFaculty";
@@ -255,14 +254,13 @@ export default function FacultyPage() {
                     <div>
                         <h2 className="text-2xl font-bold">Analytics & Insights</h2>
                         <p className="text-sm text-muted-foreground">
-                            Track attendance patterns and student performance trends
+                            Track attendance patterns
                         </p>
                     </div>
 
                     {/* Charts */}
-                    <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
+                    <div className="grid gap-4">
                         <WeeklyAttendanceHeatmap />
-                        <PerformanceTrendChart />
                     </div>
                 </div>
             </div>

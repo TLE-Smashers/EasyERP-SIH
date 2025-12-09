@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { getHostelApplicationStats } from "@/actions/hostel/getHostelApplications";
+import { getHostelOccupancy } from "@/actions/hostel/getHostelOccupancy";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -129,6 +130,35 @@ function StatsLoading() {
   );
 }
 
+function OccupancyLoading() {
+  return (
+    <Card>
+      <CardHeader>
+        <Skeleton className="h-6 w-[180px] mb-2" />
+        <Skeleton className="h-4 w-[250px]" />
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col items-center">
+          <Skeleton className="h-64 w-64 rounded-full" />
+          <div className="grid grid-cols-3 gap-6 mt-6 w-full">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="text-center">
+                <Skeleton className="h-9 w-16 mx-auto mb-2" />
+                <Skeleton className="h-4 w-24 mx-auto" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+async function OccupancyGauge() {
+  const occupancyData = await getHostelOccupancy();
+  return <HostelOccupancyGauge data={occupancyData} />;
+}
+
 export default async function HostelDashboardPage() {
   const session = await auth();
   if (!session || !session.user) {
@@ -141,8 +171,8 @@ export default async function HostelDashboardPage() {
 
   return (
     <div className="flex-1 space-y-4">
-      <PageHeader 
-        title="Hostel Dashboard" 
+      <PageHeader
+        title="Hostel Dashboard"
         description="Manage hostel applications, room allocations, and student accommodations"
       />
 
@@ -152,7 +182,9 @@ export default async function HostelDashboardPage() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2 mb-4">
         <RoomAllocationTreeMap />
-        <HostelOccupancyGauge />
+        <Suspense fallback={<OccupancyLoading />}>
+          <OccupancyGauge />
+        </Suspense>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
