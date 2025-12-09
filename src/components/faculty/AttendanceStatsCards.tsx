@@ -40,9 +40,9 @@ export function AttendanceStatsCards({ stats, activeFilter, onFilterChange }: At
             percentage: null,
             filter: "all" as FilterType,
             icon: Users,
-            color: "text-gray-600",
-            bgColor: "bg-gray-50",
-            activeBorder: "border-gray-600",
+            color: "text-[#303960]",
+            bgColor: "bg-[#F0EDE3]",
+            activeBorder: "border-[#303960]",
         },
         {
             title: "Present",
@@ -70,9 +70,9 @@ export function AttendanceStatsCards({ stats, activeFilter, onFilterChange }: At
             percentage: latePercentage,
             filter: "late" as FilterType,
             icon: Clock,
-            color: "text-yellow-600",
-            bgColor: "bg-yellow-50",
-            activeBorder: "border-yellow-600",
+            color: "text-[#F6C570]",
+            bgColor: "bg-[#FFF8EE]",
+            activeBorder: "border-[#F6C570]",
         },
         {
             title: "Leave / WFH",
@@ -80,9 +80,9 @@ export function AttendanceStatsCards({ stats, activeFilter, onFilterChange }: At
             percentage: leavePercentage,
             filter: "leave" as FilterType,
             icon: Home,
-            color: "text-blue-600",
-            bgColor: "bg-blue-50",
-            activeBorder: "border-blue-600",
+            color: "text-[#F5B19C]",
+            bgColor: "bg-[#FFF5F1]",
+            activeBorder: "border-[#F5B19C]",
         },
     ];
 

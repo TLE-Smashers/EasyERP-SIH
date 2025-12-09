@@ -148,8 +148,8 @@ export default function AdminAttendanceDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[#303960]">Attendance Dashboard</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold">Attendance Dashboard</h1>
+          <p className="text-gray-600">
             {new Date().toLocaleDateString('en-US', { 
               weekday: 'long', 
               year: 'numeric', 
@@ -169,7 +169,7 @@ export default function AdminAttendanceDashboard() {
             <Button 
               onClick={handleAutoApprove}
               disabled={isAutoApproving}
-              className="bg-gradient-to-r from-[#303960] to-[#F5B19C] hover:from-[#3d4670] hover:to-[#f7c4b0] text-white shadow-lg"
+              className="bg-gradient-to-r from-purple-600 to-blue-600"
             >
               {isAutoApproving ? (
                 <>
@@ -197,69 +197,61 @@ export default function AdminAttendanceDashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card 
-          className={`cursor-pointer transition-all hover:shadow-xl hover:scale-105 ${
-            activeFilter === 'all' ? 'border-2 border-[#303960] shadow-lg bg-[#F0EDE3]' : 'bg-white'
+          className={`cursor-pointer transition-all hover:shadow-lg ${
+            activeFilter === 'all' ? 'border-2 border-gray-600 shadow-md' : ''
           }`}
           onClick={() => setActiveFilter('all')}
         >
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#303960] flex items-center justify-center">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <div className="text-3xl font-bold text-[#303960]">{totalFaculty}</div>
-              <div className="text-sm text-muted-foreground">Total Faculty</div>
+              <Users className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+              <div className="text-3xl font-bold">{totalFaculty}</div>
+              <div className="text-sm text-gray-600">Total Faculty</div>
             </div>
           </CardContent>
         </Card>
 
         <Card 
-          className={`cursor-pointer transition-all hover:shadow-xl hover:scale-105 ${
-            activeFilter === 'present' ? 'border-2 border-green-500 shadow-lg bg-green-50' : 'bg-white'
+          className={`cursor-pointer transition-all hover:shadow-lg ${
+            activeFilter === 'present' ? 'border-2 border-green-600 shadow-md' : ''
           }`}
           onClick={() => setActiveFilter('present')}
         >
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-green-500 flex items-center justify-center">
-                <CheckCircle2 className="w-6 h-6 text-white" />
-              </div>
-              <div className="text-3xl font-bold text-green-600">{stats?.present || 0}</div>
-              <div className="text-sm text-muted-foreground">Present</div>
+              <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-green-600" />
+              <div className="text-3xl font-bold">{stats?.present || 0}</div>
+              <div className="text-sm text-gray-600">Present</div>
             </div>
           </CardContent>
         </Card>
 
         <Card 
-          className={`cursor-pointer transition-all hover:shadow-xl hover:scale-105 ${
-            activeFilter === 'late' ? 'border-2 border-[#F6C570] shadow-lg bg-[#FFF8EE]' : 'bg-white'
+          className={`cursor-pointer transition-all hover:shadow-lg ${
+            activeFilter === 'late' ? 'border-2 border-orange-600 shadow-md' : ''
           }`}
           onClick={() => setActiveFilter('late')}
         >
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#F6C570] flex items-center justify-center">
-                <Clock className="w-6 h-6 text-[#303960]" />
-              </div>
-              <div className="text-3xl font-bold text-[#F6C570]">{stats?.late || 0}</div>
-              <div className="text-sm text-muted-foreground">Late</div>
+              <Clock className="w-8 h-8 mx-auto mb-2 text-orange-600" />
+              <div className="text-3xl font-bold">{stats?.late || 0}</div>
+              <div className="text-sm text-gray-600">Late</div>
             </div>
           </CardContent>
         </Card>
 
         <Card 
-          className={`cursor-pointer transition-all hover:shadow-xl hover:scale-105 ${
-            activeFilter === 'absent' ? 'border-2 border-red-500 shadow-lg bg-red-50' : 'bg-white'
+          className={`cursor-pointer transition-all hover:shadow-lg ${
+            activeFilter === 'absent' ? 'border-2 border-red-600 shadow-md' : ''
           }`}
           onClick={() => setActiveFilter('absent')}
         >
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-red-500 flex items-center justify-center">
-                <XCircle className="w-6 h-6 text-white" />
-              </div>
-              <div className="text-3xl font-bold text-red-600">{stats?.absent || 0}</div>
-              <div className="text-sm text-muted-foreground">Absent</div>
+              <XCircle className="w-8 h-8 mx-auto mb-2 text-red-600" />
+              <div className="text-3xl font-bold">{stats?.absent || 0}</div>
+              <div className="text-sm text-gray-600">Absent</div>
             </div>
           </CardContent>
         </Card>
@@ -267,10 +259,10 @@ export default function AdminAttendanceDashboard() {
 
       {/* Auto-Approval Info */}
       {pendingRecords.length > 0 && (
-        <Card className="border-[#F5B19C] bg-[#FFF5F1]">
+        <Card className="border-purple-200 bg-purple-50">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-[#303960]">
-              <Sparkles className="w-5 h-5 text-[#F6C570]" />
+            <CardTitle className="flex items-center gap-2 text-purple-900">
+              <Sparkles className="w-5 h-5" />
               Intelligent Auto-Approval Ready
             </CardTitle>
             <CardDescription>
