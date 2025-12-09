@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { StudentsTable } from "@/components/student/StudentsTable";
 import { getStudents, getFilterOptions } from "@/actions/student/studentActions";
 import type { Student } from "@/types/student";
@@ -21,13 +22,13 @@ import { toast } from "sonner";
 export function AllStudentsClient() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  
+
   const [students, setStudents] = useState<Student[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBranch, setSelectedBranch] = useState<string>("all");
   const [selectedYear, setSelectedYear] = useState<string>("all");
-  
+
   const [branches, setBranches] = useState<string[]>([]);
   const [years, setYears] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
@@ -131,7 +132,12 @@ export function AllStudentsClient() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto space-y-6">
+      <PageHeader
+        title="All Students"
+        description="View and manage all enrolled students"
+      />
+
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>

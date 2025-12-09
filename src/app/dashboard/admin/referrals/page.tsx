@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle, XCircle, Building2, MapPin, Briefcase, DollarSign, Calendar, Users, Loader2 } from "lucide-react";
+import { Building2, MapPin, Briefcase, DollarSign, Calendar, Users, Loader2, Link } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { getPendingReferrals, updateReferralStatus } from "@/actions/alumni/submitReferral";
+import { getAllReferrals } from "@/actions/alumni/submitReferral";
 
-interface PendingReferral {
+interface Referral {
     rowNumber: number;
     timestamp: string;
     status: string;
@@ -26,18 +25,18 @@ interface PendingReferral {
     contactPerson: string;
     contactEmail: string;
     contactPhone: string;
+    referralLink: string;
     additionalNotes: string;
 }
 
 export default function AdminReferralsPage() {
-    const [referrals, setReferrals] = useState<PendingReferral[]>([]);
+    const [referrals, setReferrals] = useState<Referral[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [processingId, setProcessingId] = useState<number | null>(null);
 
     const loadReferrals = async () => {
         setIsLoading(true);
         try {
-            const data = await getPendingReferrals();
+            const data = await getAllReferrals();
             setReferrals(data);
         } catch (error) {
             console.error("Error loading referrals:", error);
@@ -50,42 +49,6 @@ export default function AdminReferralsPage() {
     useEffect(() => {
         loadReferrals();
     }, []);
-
-    const handleApprove = async (rowNumber: number) => {
-        setProcessingId(rowNumber);
-        try {
-            const result = await updateReferralStatus(rowNumber, "approved");
-            if (result.success) {
-                toast.success("Referral approved! It will now be visible to students.");
-                await loadReferrals();
-            } else {
-                toast.error(result.message);
-            }
-        } catch (error) {
-            console.error("Error approving referral:", error);
-            toast.error("Failed to approve referral");
-        } finally {
-            setProcessingId(null);
-        }
-    };
-
-    const handleReject = async (rowNumber: number) => {
-        setProcessingId(rowNumber);
-        try {
-            const result = await updateReferralStatus(rowNumber, "rejected");
-            if (result.success) {
-                toast.success("Referral rejected");
-                await loadReferrals();
-            } else {
-                toast.error(result.message);
-            }
-        } catch (error) {
-            console.error("Error rejecting referral:", error);
-            toast.error("Failed to reject referral");
-        } finally {
-            setProcessingId(null);
-        }
-    };
 
     if (isLoading) {
         return (
@@ -100,7 +63,7 @@ export default function AdminReferralsPage() {
             <div>
                 <h1 className="text-3xl font-bold">Alumni Referrals</h1>
                 <p className="mt-2 text-muted-foreground">
-                    Review and approve job referrals from alumni
+                    View all job referrals posted by alumni. These are automatically visible to students.
                 </p>
             </div>
 
@@ -108,7 +71,7 @@ export default function AdminReferralsPage() {
                 <Card>
                     <CardContent className="py-12 text-center">
                         <Building2 className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-                        <p className="text-muted-foreground">No pending referrals</p>
+                        <p className="text-muted-foreground">No referrals yet</p>
                     </CardContent>
                 </Card>
             ) : (
@@ -120,10 +83,10 @@ export default function AdminReferralsPage() {
                                     <div className="flex-1">
                                         <CardTitle className="text-xl">{referral.jobTitle}</CardTitle>
                                         <p className="text-sm text-muted-foreground mt-1">
-                                            Submitted by {referral.alumniName} ({referral.alumniEmail})
+                                            Posted by {referral.alumniName} ({referral.alumniEmail})
                                         </p>
                                     </div>
-                                    <Badge variant="outline">Pending Review</Badge>
+                                    <Badge variant="default">Live</Badge>
                                 </div>
                             </CardHeader>
                             <CardContent className="space-y-6">
@@ -192,6 +155,20 @@ export default function AdminReferralsPage() {
                                         <p>{referral.contactPerson}</p>
                                         <p>Email: {referral.contactEmail}</p>
                                         <p>Phone: {referral.contactPhone}</p>
+                                        {referral.referralLink && (
+                                            <p className="flex items-center gap-2">
+                                                <Link className="h-4 w-4" />
+                                                Referral Link:
+                                                <a
+                                                    href={referral.referralLink}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:underline"
+                                                >
+                                                    {referral.referralLink}
+                                                </a>
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
 
@@ -201,31 +178,6 @@ export default function AdminReferralsPage() {
                                         <p className="text-sm text-muted-foreground">{referral.additionalNotes}</p>
                                     </div>
                                 )}
-
-                                {/* Action Buttons */}
-                                <div className="flex gap-3 pt-4 border-t">
-                                    <Button
-                                        onClick={() => handleApprove(referral.rowNumber)}
-                                        disabled={processingId === referral.rowNumber}
-                                        className="flex-1"
-                                    >
-                                        {processingId === referral.rowNumber ? (
-                                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                        ) : (
-                                            <CheckCircle className="h-4 w-4 mr-2" />
-                                        )}
-                                        Approve & Notify Students
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => handleReject(referral.rowNumber)}
-                                        disabled={processingId === referral.rowNumber}
-                                        className="flex-1"
-                                    >
-                                        <XCircle className="h-4 w-4 mr-2" />
-                                        Reject
-                                    </Button>
-                                </div>
                             </CardContent>
                         </Card>
                     ))}

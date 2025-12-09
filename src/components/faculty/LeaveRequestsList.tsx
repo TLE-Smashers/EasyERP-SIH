@@ -32,9 +32,10 @@ import { useRouter } from "next/navigation";
 
 interface LeaveRequestsListProps {
     requests: LeaveRequest[];
+    showAllColumns?: boolean;
 }
 
-export function LeaveRequestsList({ requests }: LeaveRequestsListProps) {
+export function LeaveRequestsList({ requests, showAllColumns = false }: LeaveRequestsListProps) {
     const router = useRouter();
     const [cancellingId, setCancellingId] = useState<string | null>(null);
 

@@ -12,8 +12,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeaveApplicationForm } from "@/components/faculty/LeaveApplicationForm";
 import { LeaveRequestsList } from "@/components/faculty/LeaveRequestsList";
-import { LeaveBalanceCard } from "@/components/faculty/LeaveBalanceCard";
-import { getFacultyLeaveBalance, getFacultyLeaveRequests } from "@/actions/faculty/leaveActions";
+import { getFacultyLeaveRequests } from "@/actions/faculty/leaveActions";
+import { getFacultyByEmail } from "@/actions/faculty/getFaculty";
 
 export const metadata: Metadata = {
     title: "Apply Leave | Faculty Portal",
@@ -27,20 +27,23 @@ export default async function FacultyLeavePage() {
         redirect("/login");
     }
 
-    // In a real application, you would fetch faculty details from the database
+    // Fetch faculty details from database
+    const facultyRecord = await getFacultyByEmail(session.user.email!);
+
+    if (!facultyRecord) {
+        redirect("/login");
+    }
+
     const facultyDetails = {
-        id: session.user.id,
-        name: session.user.name || "Faculty Name",
-        employeeId: "FAC001", // This should come from database
-        department: "Computer Science", // This should come from database
+        id: facultyRecord.id,
+        email: facultyRecord.email,
+        name: facultyRecord.name,
+        employeeId: facultyRecord.employeeId || "N/A",
+        department: facultyRecord.department || "N/A",
     };
 
     const currentYear = new Date().getFullYear();
     const academicYear = `${currentYear}-${currentYear + 1}`;
-
-    // Fetch leave balance
-    const balanceResult = await getFacultyLeaveBalance(facultyDetails.id, academicYear);
-    const leaveBalance = balanceResult.success ? balanceResult.data : null;
 
     // Fetch leave requests
     const requestsResult = await getFacultyLeaveRequests(facultyDetails.id);
@@ -55,9 +58,6 @@ export default async function FacultyLeavePage() {
                     Apply for leave and manage your leave requests
                 </p>
             </div>
-
-            {/* Leave Balance Summary */}
-            <LeaveBalanceCard balance={leaveBalance ?? null} />
 
             {/* Main Content */}
             <Tabs defaultValue="apply" className="space-y-4">
@@ -82,7 +82,11 @@ export default async function FacultyLeavePage() {
                         </CardHeader>
                         <CardContent>
                             <LeaveApplicationForm
-                                facultyEmail={facultyDetails.id}
+                                facultyId={facultyDetails.id}
+                                facultyName={facultyDetails.name}
+                                facultyEmail={facultyDetails.email}
+                                employeeId={facultyDetails.employeeId}
+                                department={facultyDetails.department}
                             />
                         </CardContent>
                     </Card>
