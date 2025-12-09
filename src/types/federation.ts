@@ -123,11 +123,42 @@ export enum AccessType {
 }
 
 /**
+ * Shared Video/Resource (Videos, Lectures, Research Papers, etc.)
+ */
+export interface SharedResource {
+  resourceId: string;
+  type: 'video' | 'lecture' | 'research-paper' | 'presentation' | 'other';
+  title: string;
+  author?: string;
+  category: string;
+  description?: string;
+  fileUrl: string; // YouTube, Google Drive, or direct link
+  fileName?: string;
+  fileSize?: string;
+  fileType?: string;
+  uploadedBy: string; // Faculty/Librarian email
+  uploadedByName: string;
+  uploadedByRole: string;
+  institutionId: string;
+  institutionName: string;
+  availableFor: string[]; // Array of institution IDs or ['all']
+  accessType: AccessType;
+  downloads: number;
+  views?: number;
+  rating?: number;
+  uploadDate: string;
+  lastUpdated?: string;
+  tags?: string[];
+  isActive: boolean;
+  rowNumber?: number;
+}
+
+/**
  * Resource Access Log
  */
 export interface ResourceAccessLog {
   logId: string;
-  resourceType: 'ebook' | 'note';
+  resourceType: 'ebook' | 'note' | 'resource';
   resourceId: string;
   resourceTitle: string;
   requestedBy: string; // User email
@@ -151,7 +182,7 @@ export interface ResourceAccessLog {
 export interface SearchIndex {
   indexId: string;
   resourceId: string;
-  resourceType: 'ebook' | 'note';
+  resourceType: 'ebook' | 'note' | 'resource';
   title: string;
   keywords: string; // Comma-separated keywords
   author?: string;
@@ -172,7 +203,7 @@ export interface SearchIndex {
  */
 export interface SharingRequest {
   requestId: string;
-  resourceType: 'ebook' | 'note';
+  resourceType: 'ebook' | 'note' | 'resource';
   resourceId: string;
   resourceTitle: string;
   requestedBy: string;
@@ -220,13 +251,14 @@ export interface FederationStats {
   activeInstitutions: number;
   totalSharedEbooks: number;
   totalSharedNotes: number;
+  totalSharedResources: number;
   totalDownloads: number;
   totalViews: number;
   recentActivity: ResourceAccessLog[];
   topSharedResources: Array<{
     resourceId: string;
     title: string;
-    type: 'ebook' | 'note';
+    type: 'ebook' | 'note' | 'resource';
     downloads: number;
   }>;
 }
@@ -262,7 +294,7 @@ export interface SharedResourceFilter {
  * Share Resource Request Data
  */
 export interface ShareResourceData {
-  resourceType: 'ebook' | 'note';
+  resourceType: 'ebook' | 'note' | 'resource';
   resourceId: string;
   shareWith: string[]; // Array of institution IDs or ['all']
   accessType: AccessType;
@@ -276,3 +308,4 @@ export interface ShareResourceData {
 export type InstitutionUpdateData = Partial<Omit<Institution, 'institutionId' | 'rowNumber'>>;
 export type SharedEbookUpdateData = Partial<Omit<SharedEbook, 'ebookId' | 'rowNumber'>>;
 export type SharedNoteUpdateData = Partial<Omit<SharedNote, 'noteId' | 'rowNumber'>>;
+export type SharedResourceUpdateData = Partial<Omit<SharedResource, 'resourceId' | 'rowNumber'>>;
