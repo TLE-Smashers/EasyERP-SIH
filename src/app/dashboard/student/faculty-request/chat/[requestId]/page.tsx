@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   getFacultyRequestById,
   getFacultyRequestMessages,
@@ -26,127 +26,42 @@ export default function FacultyRequestChatPage() {
   const { data: session } = useSession();
   const params = useParams();
   const router = useRouter();
-  const { toast } = useToast();
   const requestId = params.requestId as string;
 
   const [request, setRequest] = useState<FacultyRequest | null>(null);
-  const [messages, setMessages] = useState<FacultyRequestMessage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
-  const [newMessage, setNewMessage] = useState("");
   const [meetLink, setMeetLink] = useState("");
   const [responseMessage, setResponseMessage] = useState("");
   const [scheduleDate, setScheduleDate] = useState("");
   const [scheduleTime, setScheduleTime] = useState("");
   const [duration, setDuration] = useState("60");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const isFaculty = session?.user?.role === "faculty";
 
   useEffect(() => {
     if (requestId && session?.user?.email) {
       loadData();
-      // Poll for new messages every 5 seconds
-      const interval = setInterval(loadMessages, 5000);
-      return () => clearInterval(interval);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requestId, session?.user?.email]);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   const loadData = async () => {
     setLoading(true);
     try {
-      const [requestData, messagesData] = await Promise.all([
-        getFacultyRequestById(requestId),
-        getFacultyRequestMessages(requestId),
-      ]);
+      const requestData = await getFacultyRequestById(requestId);
 
       if (!requestData) {
-        toast({
-          title: "Error",
-          description: "Request not found",
-          variant: "destructive",
-        });
+        toast.error("Request not found");
         router.back();
         return;
       }
 
       setRequest(requestData);
-      setMessages(messagesData);
-
-      // Mark messages as read
-      if (session?.user?.email) {
-        await markFacultyRequestMessagesAsRead(requestId, session.user.email);
-      }
     } catch (error) {
       console.error("Failed to load data:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load request",
-        variant: "destructive",
-      });
+      toast.error("Failed to load request");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadMessages = async () => {
-    try {
-      const messagesData = await getFacultyRequestMessages(requestId);
-      setMessages(messagesData);
-
-      // Mark as read
-      if (session?.user?.email) {
-        await markFacultyRequestMessagesAsRead(requestId, session.user.email);
-      }
-    } catch (error) {
-      console.error("Failed to load messages:", error);
-    }
-  };
-
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!newMessage.trim() || !session?.user?.email || !session?.user?.name) {
-      return;
-    }
-
-    setSending(true);
-    try {
-      const result = await sendFacultyRequestMessage({
-        requestId,
-        senderEmail: session.user.email,
-        senderName: session.user.name,
-        senderType: isFaculty ? "faculty" : "student",
-        message: newMessage,
-      });
-
-      if (result.success) {
-        setNewMessage("");
-        await loadMessages();
-      } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send message",
-        variant: "destructive",
-      });
-    } finally {
-      setSending(false);
     }
   };
 
@@ -156,11 +71,7 @@ export default function FacultyRequestChatPage() {
     // Validate required fields when accepting
     if (status === RequestStatus.ACCEPTED) {
       if (!scheduleDate || !scheduleTime || !meetLink) {
-        toast({
-          title: "Missing Information",
-          description: "Please provide meeting date, time, and Google Meet link",
-          variant: "destructive",
-        });
+        toast.error("Please provide meeting date, time, and Google Meet link");
         return;
       }
     }
@@ -177,10 +88,7 @@ export default function FacultyRequestChatPage() {
       );
 
       if (result.success) {
-        toast({
-          title: "Success",
-          description: result.message,
-        });
+        toast.success(result.message);
         await loadData();
         setResponseMessage("");
         setMeetLink("");
@@ -188,18 +96,10 @@ export default function FacultyRequestChatPage() {
         setScheduleTime("");
         setDuration("60");
       } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        });
+        toast.error(result.message);
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update status",
-        variant: "destructive",
-      });
+      toast.error("Failed to update status");
     }
   };
 
@@ -429,74 +329,67 @@ export default function FacultyRequestChatPage() {
           </CardContent>
         </Card>
 
-        {/* Chat */}
+        {/* Request Status and Actions - Simplified View */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Chat</CardTitle>
+            <CardTitle>Request Status</CardTitle>
             <CardDescription>
-              Discuss the details of this consultation
+              Current status and available actions for this consultation request
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Messages */}
-            <div className="h-96 overflow-y-auto space-y-3 p-4 border rounded-lg bg-muted/20">
-              {messages.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  No messages yet. Start the conversation!
-                </p>
-              ) : (
-                messages.map((message) => {
-                  const isOwnMessage = message.senderEmail === session?.user?.email;
-
-                  return (
-                    <div
-                      key={message.messageId}
-                      className={`flex ${isOwnMessage ? "justify-end" : "justify-start"}`}
-                    >
-                      <div
-                        className={`max-w-[70%] rounded-lg p-3 ${
-                          isOwnMessage
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-background border"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="text-xs font-medium">{message.senderName}</p>
-                          <Badge
-                            variant="outline"
-                            className="text-xs"
-                          >
-                            {message.senderType}
-                          </Badge>
-                        </div>
-                        <p className="text-sm">{message.message}</p>
-                        <p className="text-xs opacity-70 mt-1">
-                          {format(new Date(message.timestamp), "p")}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-              <div ref={messagesEndRef} />
+            <div className="p-4 border rounded-lg bg-muted/20">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Status:</span>
+                  <Badge className={getStatusColor(request.status)}>
+                    {request.status}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Submitted:</span>
+                  <span className="text-sm text-muted-foreground">
+                    {format(new Date(request.createdAt), "PPp")}
+                  </span>
+                </div>
+                {request.responseMessage && (
+                  <div className="pt-3 border-t mt-3">
+                    <p className="text-sm font-medium mb-1">Response:</p>
+                    <p className="text-sm text-muted-foreground">{request.responseMessage}</p>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Message Input */}
-            <form onSubmit={handleSendMessage} className="flex gap-2">
-              <Input
-                placeholder="Type your message..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                disabled={sending}
-              />
-              <Button type="submit" disabled={sending || !newMessage.trim()}>
-                {sending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
-            </form>
+            {request.status === RequestStatus.PENDING && !isFaculty && (
+              <div className="p-4 border border-yellow-500/50 rounded-lg bg-yellow-50 dark:bg-yellow-950/20">
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  Your request is pending. The faculty will review and respond soon.
+                </p>
+              </div>
+            )}
+
+            {request.status === RequestStatus.ACCEPTED && (
+              <div className="p-4 border border-green-500/50 rounded-lg bg-green-50 dark:bg-green-950/20">
+                <p className="text-sm font-medium text-green-800 dark:text-green-200 mb-2">
+                  Request Accepted!
+                </p>
+                <p className="text-sm text-green-700 dark:text-green-300">
+                  Your consultation has been scheduled. Please use the meeting link above to join at the scheduled time.
+                </p>
+              </div>
+            )}
+
+            {request.status === RequestStatus.REJECTED && (
+              <div className="p-4 border border-red-500/50 rounded-lg bg-red-50 dark:bg-red-950/20">
+                <p className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
+                  Request Declined
+                </p>
+                <p className="text-sm text-red-700 dark:text-red-300">
+                  Unfortunately, the faculty was unable to accept this request. Please try requesting again or contact another faculty member.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

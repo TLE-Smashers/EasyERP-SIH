@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getFacultyRequests } from "@/actions/federation/facultyRequests";
 import { FacultyRequest, RequestStatus } from "@/types/facultyRequest";
-import { Loader2, Calendar, Clock, MessageCircle, User } from "lucide-react";
+import { Loader2, Calendar, Clock, User } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 
@@ -167,13 +167,7 @@ export default function FacultyRequestsPage() {
                 <div className="flex gap-2 items-center">
                   <Link href={`/dashboard/student/faculty-request/chat/${request.requestId}`}>
                     <Button variant="outline" size="sm">
-                      <MessageCircle className="h-4 w-4 mr-2" />
-                      View & Respond
-                      {request.unreadCount > 0 && (
-                        <Badge variant="destructive" className="ml-2">
-                          {request.unreadCount}
-                        </Badge>
-                      )}
+                      View Details & Respond
                     </Button>
                   </Link>
 

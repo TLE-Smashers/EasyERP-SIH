@@ -465,12 +465,8 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
     },
     {
       title: "Student Requests",
-      url: "#",
+      url: "/dashboard/faculty/requests",
       icon: MessageCircle,
-      items: [
-        { title: "Pending Requests", url: "/dashboard/faculty/requests" },
-        { title: "All Requests", url: "/dashboard/faculty/requests/all" },
-      ],
     },
     {
       title: "My Profile",

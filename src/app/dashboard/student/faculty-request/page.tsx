@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { getAvailableFaculty, searchFaculty } from "@/actions/federation/getFaculty";
 import { createFacultyRequest } from "@/actions/federation/facultyRequests";
 import { FacultyProfile } from "@/types/facultyRequest";
@@ -16,7 +16,6 @@ import { getInstitutionInfo } from "@/actions/federation/getStudentInfo";
 
 export default function FacultyRequestPage() {
   const { data: session } = useSession();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const [faculty, setFaculty] = useState<FacultyProfile[]>([]);
@@ -52,11 +51,7 @@ export default function FacultyRequestPage() {
       setFaculty(data);
       setFilteredFaculty(data);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load faculty",
-        variant: "destructive",
-      });
+      toast.error("Failed to load faculty");
     } finally {
       setSearching(false);
     }
@@ -73,11 +68,7 @@ export default function FacultyRequestPage() {
       const results = await searchFaculty(searchQuery);
       setFilteredFaculty(results);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Search failed",
-        variant: "destructive",
-      });
+      toast.error("Search failed");
     } finally {
       setSearching(false);
     }
@@ -87,20 +78,12 @@ export default function FacultyRequestPage() {
     e.preventDefault();
 
     if (!selectedFaculty) {
-      toast({
-        title: "Error",
-        description: "Please select a faculty member",
-        variant: "destructive",
-      });
+      toast.error("Please select a faculty member");
       return;
     }
 
     if (!session?.user?.email || !session?.user?.name) {
-      toast({
-        title: "Error",
-        description: "User session not found",
-        variant: "destructive",
-      });
+      toast.error("User session not found");
       return;
     }
 
@@ -110,11 +93,7 @@ export default function FacultyRequestPage() {
       const institutionInfo = await getInstitutionInfo();
       
       if (!institutionInfo) {
-        toast({
-          title: "Error",
-          description: "Failed to get institution information",
-          variant: "destructive",
-        });
+        toast.error("Failed to get institution information");
         setLoading(false);
         return;
       }
@@ -134,10 +113,7 @@ export default function FacultyRequestPage() {
       });
 
       if (result.success) {
-        toast({
-          title: "Success",
-          description: "Faculty request sent successfully",
-        });
+        toast.success("Faculty request sent successfully");
         // Reset form
         setFormData({
           subject: "",
@@ -146,18 +122,10 @@ export default function FacultyRequestPage() {
         });
         setSelectedFaculty(null);
       } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        });
+        toast.error(result.message);
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send request",
-        variant: "destructive",
-      });
+      toast.error("Failed to send request");
     } finally {
       setLoading(false);
     }
