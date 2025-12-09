@@ -1,6 +1,6 @@
 /**
  * Attendance Management Type Definitions
- * Handles faculty daily attendance tracking
+ * Handles faculty daily attendance tracking with Photo + GPS
  */
 
 // Attendance Status
@@ -17,7 +17,48 @@ export type AttendanceMethod =
     | "manual"          // Manually marked by admin
     | "biometric"       // Biometric system
     | "self"            // Self-marked by faculty
+    | "photo_gps"       // Photo + GPS capture (NEW)
     | "system";         // System-generated
+
+// GPS Coordinates
+export interface GPSCoordinates {
+  latitude: number;
+  longitude: number;
+  accuracy: number; // in meters
+  altitude?: number;
+  timestamp: number;
+}
+
+// Device Information
+export interface DeviceInfo {
+  fingerprint: string; // Unique device ID
+  userAgent: string;
+  platform: string;
+  browser: string;
+  isMobile: boolean;
+  screenResolution: string;
+  timezone: string;
+}
+
+// Campus Geo-Fence Configuration
+export interface GeoFenceConfig {
+  id: string;
+  name: string; // e.g., "Main Campus", "Admin Block"
+  centerLat: number;
+  centerLng: number;
+  radiusMeters: number; // Allowed radius (e.g., 100m)
+  isActive: boolean;
+}
+
+// Attendance Flags (for anomaly detection)
+export type AttendanceFlag = 
+  | 'outside_geofence'
+  | 'different_device'
+  | 'outside_time_window'
+  | 'low_gps_accuracy'
+  | 'suspicious_location'
+  | 'duplicate_attempt'
+  | 'manual_override';
 
 /**
  * Faculty Attendance Record
@@ -36,6 +77,22 @@ export interface FacultyAttendanceRecord {
     checkOutTime?: string;
     totalHours?: number;
 
+    // Photo + GPS Data (NEW)
+    checkInPhoto?: string; // Base64 or URL
+    checkInGPS?: GPSCoordinates;
+    checkInDevice?: DeviceInfo;
+    checkInGeoFence?: string; // Which geo-fence was used
+    
+    checkOutPhoto?: string;
+    checkOutGPS?: GPSCoordinates;
+    checkOutDevice?: DeviceInfo;
+    checkOutGeoFence?: string;
+    
+    // Verification (NEW)
+    isWithinGeoFence?: boolean;
+    isSameDevice?: boolean;
+    flags?: AttendanceFlag[];
+
     // Additional Info
     remarks?: string;
     markedBy: string;
@@ -44,6 +101,11 @@ export interface FacultyAttendanceRecord {
     // Late Entry
     isLate?: boolean;
     lateByMinutes?: number;
+
+    // Admin approval (NEW)
+    requiresApproval?: boolean;
+    approvedBy?: string;
+    approvedAt?: string;
 
     // Metadata
     timestamp: string;

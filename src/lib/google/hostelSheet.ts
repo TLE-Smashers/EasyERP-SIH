@@ -39,7 +39,7 @@ export async function confirmHostelPayment(
       // Build payment object from hostel application row
       const now = new Date();
       const pad = (n: number) => n.toString().padStart(2, '0');
-      const timestamp = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      const timestamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
       const createdDate = timestamp;
       const paymentObj = {
         paymentType: 'hostel' as import('@/types/payment').PaymentType,
@@ -117,13 +117,13 @@ function getAuthClient() {
 }
 
 function parseHostelApplicationRow(row: any[], rowNumber: number): HostelApplication {
-  return {
+  const parsed = {
     timestamp: row[0] || "",
     studentId: row[1] || "",
     fullName: row[2] || "",
     email: row[3] || "",
     contactNumber: row[4] || "",
-    gender: row[5] || "",
+    gender: (row[5] || "").toLowerCase(), // Normalize gender to lowercase
     category: row[6] || "",
     entrancePercentage: parseFloat(row[7]) || 0,
     status: (row[8] || "pending") as any,
@@ -134,6 +134,8 @@ function parseHostelApplicationRow(row: any[], rowNumber: number): HostelApplica
     currentYear: row[14] ? Number(row[14]) : undefined,
     session: row[15] || undefined,
   };
+  console.log('[parseHostelApplicationRow]', parsed.studentId, 'gender:', parsed.gender, 'status:', parsed.status);
+  return parsed;
 }
 
 /**
@@ -304,10 +306,12 @@ export async function allocateRoom(
  */
 export async function deallocateRoom(studentId: string): Promise<boolean> {
   try {
+    console.log('[DEALLOCATE] Starting deallocation for studentId:', studentId);
     const auth = await getAuthClient();
     const sheets = google.sheets({ version: "v4", auth: auth as any });
 
     // Fetch applications and rooms
+    console.log('[DEALLOCATE] Fetching applications and rooms...');
     const [applications, rooms] = await Promise.all([
       fetchHostelApplications(),
       fetchHostelRooms(),
@@ -315,14 +319,23 @@ export async function deallocateRoom(studentId: string): Promise<boolean> {
 
     // Find the student's application
     const app = applications.find(a => a.studentId === studentId);
-    if (!app || !app.roomNumber) return false;
+    console.log('[DEALLOCATE] Found application:', app);
+    if (!app || !app.roomNumber) {
+      console.error('[DEALLOCATE] No application found or no room assigned for studentId:', studentId);
+      return false;
+    }
 
     // Find the room
     const room = rooms.find(r => r.roomNumber === app.roomNumber);
-    if (!room) return false;
+    console.log('[DEALLOCATE] Found room:', room);
+    if (!room) {
+      console.error('[DEALLOCATE] Room not found:', app.roomNumber);
+      return false;
+    }
 
     // Remove student from occupants and filter out empty strings
     const newOccupants = room.occupants.filter(id => id !== studentId).map(id => id.trim()).filter(Boolean);
+    console.log('[DEALLOCATE] New occupants after removal:', newOccupants);
 
     // Update the room in the sheet
     const roomSheetRes = await sheets.spreadsheets.values.get({
@@ -331,8 +344,12 @@ export async function deallocateRoom(studentId: string): Promise<boolean> {
     });
     const roomRows = roomSheetRes.data.values || [];
     const roomRowIdx = roomRows.findIndex(row => row[1] === room.roomNumber);
-    if (roomRowIdx === -1) return false;
+    if (roomRowIdx === -1) {
+      console.error('[DEALLOCATE] Room not found in sheet:', room.roomNumber);
+      return false;
+    }
     const updateRoomRange = `${HOSTEL_ROOM_SHEET_NAME}!C${roomRowIdx + 2}`;
+    console.log('[DEALLOCATE] Updating room occupants at range:', updateRoomRange);
     await sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
       range: updateRoomRange,
@@ -347,7 +364,11 @@ export async function deallocateRoom(studentId: string): Promise<boolean> {
     });
     const appRows = appSheetRes.data.values || [];
     const appRowIdx = appRows.findIndex(row => row[1] === studentId);
-    if (appRowIdx === -1) return false;
+    if (appRowIdx === -1) {
+      console.error('[DEALLOCATE] Application not found in sheet for studentId:', studentId);
+      return false;
+    }
+    console.log('[DEALLOCATE] Updating application status to deallocated...');
     await sheets.spreadsheets.values.batchUpdate({
       spreadsheetId: SPREADSHEET_ID,
       requestBody: {
@@ -359,9 +380,10 @@ export async function deallocateRoom(studentId: string): Promise<boolean> {
         ],
       },
     });
+    console.log('[DEALLOCATE] Deallocation successful for studentId:', studentId);
     return true;
   } catch (error) {
-    console.error("Error deallocating hostel room:", error);
+    console.error("[DEALLOCATE] Error deallocating hostel room:", error);
     return false;
   }
 }

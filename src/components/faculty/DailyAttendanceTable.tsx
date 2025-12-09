@@ -35,12 +35,15 @@ import { Edit2, Loader2, Users, Clock, Download } from "lucide-react";
 import { updateAttendanceRecord } from "@/actions/faculty/attendanceActions";
 import { toast } from "sonner";
 
+import { FilterType } from "./AttendanceStatsCards";
+
 interface DailyAttendanceTableProps {
     records: FacultyAttendanceRecord[];
     date: string;
+    activeFilter?: FilterType;
 }
 
-export function DailyAttendanceTable({ records, date }: DailyAttendanceTableProps) {
+export function DailyAttendanceTable({ records, date, activeFilter }: DailyAttendanceTableProps) {
     const router = useRouter();
     const [editingRecord, setEditingRecord] = useState<FacultyAttendanceRecord | null>(null);
     const [newStatus, setNewStatus] = useState<AttendanceStatus>("present");
@@ -117,6 +120,10 @@ export function DailyAttendanceTable({ records, date }: DailyAttendanceTableProp
     };
 
     if (records.length === 0) {
+        const filterMessage = activeFilter && activeFilter !== "all" 
+            ? `No ${activeFilter} records found` 
+            : "No attendance has been marked for this date yet";
+        
         return (
             <Card>
                 <CardHeader>
@@ -130,7 +137,7 @@ export function DailyAttendanceTable({ records, date }: DailyAttendanceTableProp
                         <Users className="h-12 w-12 text-muted-foreground mb-4" />
                         <h3 className="text-lg font-semibold mb-2">No attendance records</h3>
                         <p className="text-sm text-muted-foreground">
-                            No attendance has been marked for this date yet
+                            {filterMessage}
                         </p>
                     </div>
                 </CardContent>

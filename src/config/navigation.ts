@@ -273,11 +273,8 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
     },
     {
       title: "Attendance",
-      url: "#",
+      url: "/dashboard/faculty/attendance-manage",
       icon: ClipboardCheck,
-      items: [
-        { title: "Mark Attendance", url: "/dashboard/faculty/attendance-manage" },
-      ],
     },
     {
       title: "Notices",
@@ -497,12 +494,8 @@ export const roleBasedNavigation: Record<UserRole, NavItem[]> = {
     },
     {
       title: "My Attendance",
-      url: "#",
+      url: "/dashboard/faculty/my-attendance",
       icon: CalendarCheck,
-      items: [
-        { title: "View Attendance", url: "/dashboard/faculty/my-attendance" },
-        { title: "Monthly Report", url: "/dashboard/faculty/my-attendance/monthly" },
-      ],
     },
     {
       title: "Notices",

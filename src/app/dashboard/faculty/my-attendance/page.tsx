@@ -6,9 +6,11 @@
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/auth";
-import { Calendar, TrendingUp } from "lucide-react";
+import { Calendar, TrendingUp, Camera } from "lucide-react";
+import Link from "next/link";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MyAttendanceCalendar } from "@/components/faculty/MyAttendanceCalendar";
 import { MonthlyAttendanceSummary } from "@/components/faculty/MonthlyAttendanceSummary";
@@ -41,11 +43,19 @@ export default async function MyAttendancePage() {
     return (
         <div className="container mx-auto px-4 py-6 space-y-8">
             {/* Header */}
-            <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">My Attendance</h1>
-                <p className="text-muted-foreground mt-1">
-                    View your attendance records and performance
-                </p>
+            <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                    <h1 className="text-3xl font-bold tracking-tight">My Attendance</h1>
+                    <p className="text-muted-foreground mt-1">
+                        View your attendance records and performance
+                    </p>
+                </div>
+                <Link href="/faculty/attendance">
+                    <Button size="lg" className="gap-2">
+                        <Camera className="h-5 w-5" />
+                        📸 Mark Attendance
+                    </Button>
+                </Link>
             </div>
 
             {/* Main Content */}
