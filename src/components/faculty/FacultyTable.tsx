@@ -104,7 +104,7 @@ export function FacultyTable({ data, onViewDetails, onEdit, onChangeStatus }: Fa
             faculty.facultyId,
             faculty.name,
             faculty.email,
-            faculty.department,
+            faculty.branch,
             faculty.designation.replace(/_/g, ' '),
             faculty.status
         ]);

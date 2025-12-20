@@ -23,10 +23,10 @@ export default function Home() {
   const t = useTranslations("HomePage");
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen" suppressHydrationWarning>
 
       {/* Navigation */}
-      <nav className="border-b bg-background/95 backdrop-blur sticky top-0 z-50">
+      <nav className="border-b bg-background/95 backdrop-blur sticky top-0 z-50" suppressHydrationWarning>
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Image 

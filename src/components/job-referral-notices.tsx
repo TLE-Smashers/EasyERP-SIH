@@ -30,7 +30,7 @@ export default function JobReferralNotices({
 
         async function loadReferrals() {
             try {
-                const data = await getJobReferrals();
+                const data = await getApprovedReferrals();
                 setReferrals(data.slice(0, maxDisplay));
             } catch (error) {
                 console.error("Error loading job referrals:", error);

@@ -205,12 +205,12 @@ export async function markAttendance(
     const geoFenceCheck = checkGeoFences(gps, geoFences);
     console.log('[Attendance] Geofence check result:', geoFenceCheck);
     
-    if (!geoFenceCheck.isWithin) {
+    if (!geoFenceCheck.isWithinFence) {
       flags.push('outside_geofence');
       return {
         success: false,
         message: '',
-        error: geoFenceCheck.message,
+        error: geoFenceCheck.error,
       };
     }
     

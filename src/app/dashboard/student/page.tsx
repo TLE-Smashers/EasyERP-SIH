@@ -83,9 +83,9 @@ export default function StudentDashboardPage() {
       
       // Fetch payment periods
       const result = await fetchStudentPaymentPeriodsAction(
-        student.course || '',
-        student.branch || '',
-        student.currentYear || 1
+        student.academicInfo?.course || '',
+        student.academicInfo?.branch || '',
+        student.academicInfo?.year || 1
       );
       
       if (result.success) {

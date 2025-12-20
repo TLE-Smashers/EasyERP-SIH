@@ -76,7 +76,7 @@ export function StudentsTable({ data, onViewDetails, onEdit, onChangeStatus }: S
     const headers = ['Student ID', 'Name', 'Email', 'Course', 'Semester', 'Status'];
     const csvData = data.map(student => [
       student.academicInfo.studentId,
-      student.personalInfo.name,
+      student.personalInfo.fullName,
       student.personalInfo.email,
       student.academicInfo.course,
       student.academicInfo.semester,

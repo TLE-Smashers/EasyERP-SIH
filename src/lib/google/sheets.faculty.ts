@@ -155,7 +155,7 @@ export async function getAllFaculty(): Promise<Faculty[]> {
  */
 export async function getFacultyById(facultyId: string): Promise<Faculty | null> {
     try {
-        const allFaculty = await getFaculty();
+        const allFaculty = await getAllFaculty();
         const found = allFaculty.find(f => f.facultyId === facultyId);
         return found || null;
     } catch (error) {

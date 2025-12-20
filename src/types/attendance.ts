@@ -201,3 +201,38 @@ export interface AttendanceFormData {
     checkOutTime?: string;
     remarks?: string;
 }
+
+/**
+ * Photo Capture Result
+ */
+export interface PhotoCaptureResult {
+    success: boolean;
+    photo?: string;
+    metadata?: {
+        width: number;
+        height: number;
+        size: number;
+        quality: number;
+    };
+    error?: string;
+}
+
+/**
+ * GPS Capture Result
+ */
+export interface GPSCaptureResult {
+    success: boolean;
+    gps?: GPSCoordinates;
+    coordinates?: GPSCoordinates;
+    error?: string;
+}
+
+/**
+ * Geo-Fence Check Result
+ */
+export interface GeoFenceCheckResult {
+    isWithinFence: boolean;
+    distance: number;
+    geoFence?: GeoFenceConfig;
+    error?: string;
+}

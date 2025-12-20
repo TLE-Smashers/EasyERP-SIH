@@ -40,9 +40,6 @@ const nextConfig: NextConfig = {
     return config;
   },
   
-  // Reduce initial compile time
-  swcMinify: true,
-  
   // Optimize image loading with remote patterns
   images: {
     formats: ['image/avif', 'image/webp'],

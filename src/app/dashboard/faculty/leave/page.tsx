@@ -37,9 +37,9 @@ export default async function FacultyLeavePage() {
     const facultyDetails = {
         id: facultyRecord.id,
         email: facultyRecord.email,
-        name: facultyRecord.name,
-        employeeId: facultyRecord.employeeId || "N/A",
-        department: facultyRecord.department || "N/A",
+        name: facultyRecord.fullName,
+        employeeId: facultyRecord.facultyId || "N/A",
+        department: facultyRecord.branch || "N/A",
     };
 
     const currentYear = new Date().getFullYear();

@@ -217,18 +217,18 @@ export default function StudentFeeStatusPage() {
             transactionCharges: selectedPeriod.transactionCharges,
           }}
           contextData={{
-            studentName: student?.personalInfo?.fullName || student?.fullName || session?.user?.name || '',
-            fatherName: student?.personalInfo?.guardianName || student?.fatherName || '',
-            email: student?.personalInfo?.email || student?.email || session?.user?.email || '',
-            mobile: student?.personalInfo?.mobileNumber || student?.mobileNumber || student?.contactNumber || '',
-            rollNumber: student?.academicInfo?.rollNumber || student?.rollNumber || '',
-            course: student?.academicInfo?.course || student?.course || '',
-            branch: student?.academicInfo?.branch || student?.branch || '',
-            category: student?.category || 'General',
+            studentName: student?.personalInfo?.fullName || session?.user?.name || '',
+            fatherName: student?.personalInfo?.guardianName || '',
+            email: student?.personalInfo?.email || session?.user?.email || '',
+            mobile: student?.personalInfo?.mobileNumber || '',
+            rollNumber: student?.academicInfo?.rollNumber || '',
+            course: student?.academicInfo?.course || '',
+            branch: student?.academicInfo?.branch || '',
+            category: 'General',
             academicYear: selectedPeriod.academicYear,
             semester: selectedPeriod.semester,
             periodId: selectedPeriod.id,
-            studentId: student?.academicInfo?.studentId || student?.studentId || student?.rollNumber || '',
+            studentId: student?.academicInfo?.studentId || '',
           }}
           createdBy={session?.user?.email || 'student'}
           onSuccess={() => {

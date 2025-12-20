@@ -50,7 +50,7 @@ export default async function MyLeaveBalancePage() {
             />
 
             {/* Main Balance Card */}
-            <LeaveBalanceCard balance={leaveBalance} />
+            <LeaveBalanceCard balance={leaveBalance ?? null} />
 
             {/* Detailed Breakdown */}
             {leaveBalance && (

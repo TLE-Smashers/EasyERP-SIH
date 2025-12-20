@@ -58,9 +58,9 @@ export function checkGeoFences(
 
   if (activeGeoFences.length === 0) {
     return {
-      isWithin: false,
+      isWithinFence: false,
       distance: 0,
-      message: 'No active geo-fences configured',
+      error: 'No active geo-fences configured',
     };
   }
 
@@ -73,10 +73,9 @@ export function checkGeoFences(
 
     if (distance <= geoFence.radiusMeters) {
       return {
-        isWithin: true,
+        isWithinFence: true,
         geoFence,
         distance,
-        message: `Within ${geoFence.name} (${Math.round(distance)}m from center)`,
       };
     }
   }
@@ -100,10 +99,10 @@ export function checkGeoFences(
   );
 
   return {
-    isWithin: false,
+    isWithinFence: false,
     geoFence: nearest,
     distance: nearestDistance,
-    message: `Outside allowed area. Nearest: ${nearest.name} (${Math.round(nearestDistance)}m away, limit: ${nearest.radiusMeters}m)`,
+    error: `Outside allowed area. Nearest: ${nearest.name} (${Math.round(nearestDistance)}m away, limit: ${nearest.radiusMeters}m)`,
   };
 }
 
