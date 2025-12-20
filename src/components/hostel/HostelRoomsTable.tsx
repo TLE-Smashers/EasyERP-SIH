@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { HostelRoom } from "@/types/hostel";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { EditRoomDialog } from "@/components/hostel/EditRoomDialog";
-import { X, Edit2, Trash2 } from "lucide-react";
+import { X, Edit2, Trash2, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface HostelRoomsTableProps {
@@ -27,15 +27,47 @@ export function HostelRoomsTable({ data, onDeallocate }: HostelRoomsTableProps) 
   const { toast } = useToast();
   const router = useRouter();
 
+  const exportToCSV = () => {
+    const headers = ['Hostel', 'Room Number', 'Max Occupancy', 'Current Occupancy', 'Status', 'Occupants'];
+    const csvRows = [
+      headers.join(','),
+      ...data.map(room => {
+        const status = room.occupants.length === 0 ? 'Available' : room.occupants.length < room.maxOccupancy ? 'Partially Filled' : 'Full';
+        return [
+          `"${room.hostel === 'male' ? 'Boys' : 'Girls'}"`,
+          `"${room.roomNumber}"`,
+          `"${room.maxOccupancy}"`,
+          `"${room.occupants.length}"`,
+          `"${status}"`,
+          `"${room.occupants.join(', ')}"`
+        ].join(',');
+      })
+    ];
+
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `hostel-rooms-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
   const performDeallocate = async (studentId: string) => {
     try {
+      console.log('[ROOMS TABLE] Deallocate clicked for studentId:', studentId);
       setLoadingId(studentId);
       const res = await fetch("/api/hostel/deallocate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ studentId }),
       });
+      console.log('[ROOMS TABLE] API response status:', res.status);
       const result = await res.json();
+      console.log('[ROOMS TABLE] API response data:', result);
       setDialogOpen(false);
       setSelectedStudentId(null);
       toast({
@@ -47,6 +79,7 @@ export function HostelRoomsTable({ data, onDeallocate }: HostelRoomsTableProps) 
         router.refresh();
       }
     } catch (error) {
+      console.error('[ROOMS TABLE] Error in performDeallocate:', error);
       setDialogOpen(false);
       setSelectedStudentId(null);
       toast({
@@ -96,6 +129,12 @@ export function HostelRoomsTable({ data, onDeallocate }: HostelRoomsTableProps) 
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-end items-center mb-4">
+        <Button onClick={exportToCSV} variant="outline" size="sm">
+          <Download className="mr-2 h-4 w-4" />
+          Export CSV
+        </Button>
+      </div>
       <div className="overflow-x-auto">
         <div className="rounded-xl border min-w-max mx-0 shadow-lg">
           <Table>

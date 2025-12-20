@@ -37,7 +37,7 @@ export function LeaveBalanceTable({ facultyList, academicYear }: LeaveBalanceTab
 
         for (const faculty of facultyList) {
             const result = await getFacultyLeaveBalance(faculty.id, academicYear);
-            balanceMap.set(faculty.id, result.success ? result.data : null);
+            balanceMap.set(faculty.id, result.success ? (result.data ?? null) : null);
         }
 
         setBalances(balanceMap);
@@ -49,7 +49,7 @@ export function LeaveBalanceTable({ facultyList, academicYear }: LeaveBalanceTab
         try {
             const result = await createLeaveBalance(
                 faculty.id,
-                faculty.employeeId || "N/A",
+                faculty.facultyId || "N/A",
                 academicYear
             );
 
@@ -105,8 +105,8 @@ export function LeaveBalanceTable({ facultyList, academicYear }: LeaveBalanceTab
                             return (
                                 <TableRow key={faculty.id}>
                                     <TableCell className="font-medium">{faculty.name}</TableCell>
-                                    <TableCell>{faculty.employeeId || "N/A"}</TableCell>
-                                    <TableCell>{faculty.department || "N/A"}</TableCell>
+                                    <TableCell>{faculty.facultyId || "N/A"}</TableCell>
+                                    <TableCell>{faculty.branch || "N/A"}</TableCell>
                                     {hasBalance && balance ? (
                                         <>
                                             <TableCell className="text-center">

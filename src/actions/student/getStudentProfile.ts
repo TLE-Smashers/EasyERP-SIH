@@ -38,13 +38,13 @@ function convertStudentRecordToStudent(record: StudentRecord): Student {
       rollNumber: record.enrollmentNumber,
       course: record.course,
       branch: record.branch,
-      year: parseInt(record.currentYear) || 1,
-      semester: parseInt(record.currentSemester) || 1,
-      batch: record.batch || `${record.admissionYear}-${parseInt(record.admissionYear) + 4}`,
+      year: typeof record.currentYear === 'number' ? record.currentYear : parseInt(String(record.currentYear)) || 1,
+      semester: typeof record.currentSemester === 'number' ? record.currentSemester : parseInt(String(record.currentSemester)) || 1,
+      batch: `${record.admissionYear}-${parseInt(record.admissionYear) + 4}`,
+      admissionDate: record.admissionDate,
     },
     status: isGraduated ? 'graduated' : 'active',
-    admissionDate: record.admissionDate,
-    documents: {},
+    createdAt: record.admissionDate,
   };
 }
 

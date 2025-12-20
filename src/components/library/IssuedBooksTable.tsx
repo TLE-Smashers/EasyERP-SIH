@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, Download } from "lucide-react";
 import { toast } from "sonner";
 import { returnBook } from "@/actions/library/returnBook";
 import { formatDateForDisplay } from "@/lib/dateUtils";
@@ -45,6 +45,38 @@ export function IssuedBooksTable({ issuedBooks, onUpdate }: IssuedBooksTableProp
   const [condition, setCondition] = useState<'good' | 'fair' | 'damaged' | 'lost'>('good');
   const [returnNotes, setReturnNotes] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const exportToCSV = () => {
+    const headers = ['Issue ID', 'Student Name', 'Roll Number', 'Book Title', 'Book Author', 'Issue Date', 'Due Date', 'Status', 'Fine Amount', 'Fine Paid'];
+    const csvRows = [
+      headers.join(','),
+      ...issuedBooks.map(issue =>
+        [
+          `"${issue.issueId}"`,
+          `"${issue.studentName}"`,
+          `"${issue.rollNumber || issue.studentId}"`,
+          `"${issue.bookTitle}"`,
+          `"${issue.bookAuthor}"`,
+          `"${formatDateForDisplay(issue.issueDate)}"`,
+          `"${formatDateForDisplay(issue.dueDate)}"`,
+          `"${issue.status}"`,
+          `"${issue.fineAmount}"`,
+          `"${issue.finePaid ? 'Yes' : 'No'}"`
+        ].join(',')
+      )
+    ];
+
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `issued-books-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
 
   const handleReturnClick = (issue: IssuedBook) => {
     setSelectedIssue(issue);
@@ -104,6 +136,13 @@ export function IssuedBooksTable({ issuedBooks, onUpdate }: IssuedBooksTableProp
 
   return (
     <>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">{issuedBooks.length} Issued Book(s)</h3>
+        <Button onClick={exportToCSV} variant="outline" size="sm">
+          <Download className="mr-2 h-4 w-4" />
+          Export CSV
+        </Button>
+      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>

@@ -26,7 +26,7 @@ export default async function LeaveCalendarPage() {
     // Fetch all approved leave requests
     const requestsResult = await getLeaveRequests();
     const allRequests = requestsResult.success ? requestsResult.data : [];
-    const approvedLeaves = allRequests.filter(req => req.status === "approved");
+    const approvedLeaves = (allRequests || []).filter(req => req.status === "approved");
 
     return (
         <div className="container mx-auto px-4 py-6 space-y-8">

@@ -49,8 +49,8 @@ export function ApplicationTrendChart({ data = defaultData }: ApplicationTrendCh
           </select>
         </div>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="h-44 w-full">
+      <CardContent className="pb-4">
+        <ChartContainer config={chartConfig} className="h-40 w-full">
           <AreaChart data={data}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
             <XAxis 

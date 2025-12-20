@@ -11,7 +11,7 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { MoreHorizontal, Eye, Edit, UserCheck, UserX } from "lucide-react";
+import { MoreHorizontal, Eye, Edit, UserCheck, UserX, Download } from "lucide-react";
 
 import {
   Table,
@@ -70,6 +70,34 @@ const getStatusBadge = (status: string) => {
 export function StudentsTable({ data, onViewDetails, onEdit, onChangeStatus }: StudentsTableProps) {
   const router = useRouter();
   const [sorting, setSorting] = React.useState<SortingState>([]);
+
+  // CSV Export function
+  const exportToCSV = () => {
+    const headers = ['Student ID', 'Name', 'Email', 'Course', 'Semester', 'Status'];
+    const csvData = data.map(student => [
+      student.academicInfo.studentId,
+      student.personalInfo.fullName,
+      student.personalInfo.email,
+      student.academicInfo.course,
+      student.academicInfo.semester,
+      student.status
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => row.map(cell => `\"${cell}\"`).join(','))
+    ].join('\\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `students_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const columns: ColumnDef<Student>[] = [
     {
@@ -188,6 +216,14 @@ export function StudentsTable({ data, onViewDetails, onEdit, onChangeStatus }: S
 
   return (
     <div className="space-y-4">
+      {/* Export Button */}
+      <div className="flex justify-end">
+        <Button variant="outline" onClick={exportToCSV} className="gap-2">
+          <Download className="h-4 w-4" />
+          Export CSV
+        </Button>
+      </div>
+
       {/* Table */}
       <div className="rounded-md border">
         <Table>

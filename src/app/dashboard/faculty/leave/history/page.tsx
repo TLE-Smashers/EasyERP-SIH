@@ -38,11 +38,11 @@ export default async function LeaveHistoryPage() {
 
     // Calculate statistics
     const stats = {
-        total: leaveRequests.length,
-        pending: leaveRequests.filter(r => r.status === "pending").length,
-        approved: leaveRequests.filter(r => r.status === "approved").length,
-        rejected: leaveRequests.filter(r => r.status === "rejected").length,
-        cancelled: leaveRequests.filter(r => r.status === "cancelled").length,
+        total: (leaveRequests || []).length,
+        pending: (leaveRequests || []).filter(r => r.status === "pending").length,
+        approved: (leaveRequests || []).filter(r => r.status === "approved").length,
+        rejected: (leaveRequests || []).filter(r => r.status === "rejected").length,
+        cancelled: (leaveRequests || []).filter(r => r.status === "cancelled").length,
     };
 
     return (
@@ -111,7 +111,7 @@ export default async function LeaveHistoryPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <LeaveRequestsList requests={leaveRequests} showAllColumns={true} />
+                    <LeaveRequestsList requests={leaveRequests || []} showAllColumns={true} />
                 </CardContent>
             </Card>
         </div>

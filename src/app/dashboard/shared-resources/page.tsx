@@ -39,35 +39,35 @@ async function SharedResourcesContent() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total Ebooks</CardTitle>
+            <CardTitle className="text-lg font-semibold">Total Ebooks</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{ebooks.length}</div>
+            <div className="text-4xl font-bold">{ebooks.length}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total Notes</CardTitle>
+            <CardTitle className="text-lg font-semibold">Total Notes</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{notes.length}</div>
+            <div className="text-4xl font-bold">{notes.length}</div>
+          </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold">Shared Videos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-4xl font-bold">{videos.length}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Shared Videos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{videos.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total Institutions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {new Set([...ebooks.map(e => e.institutionId), ...notes.map(n => n.institutionId)]).size}
+            <CardTitle className="text-lg font-semibold">Total Institutions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-4xl font-bold">
+            {new Set([...ebooks.map(e => e.institutionId), ...notes.map(n => n.institutionId)]).size}
             </div>
           </CardContent>
         </Card>
@@ -104,7 +104,7 @@ async function SharedResourcesContent() {
               {ebooks.map((ebook) => (
                 <Card key={ebook.ebookId} className="flex flex-col">
                   <CardHeader>
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
                         <CardTitle className="text-lg line-clamp-2">
                           {ebook.title}
@@ -112,6 +112,10 @@ async function SharedResourcesContent() {
                         <CardDescription className="mt-1">
                           by {ebook.author}
                         </CardDescription>
+                      </div>
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full shrink-0">
+                        <Download className="w-4 h-4" />
+                        <span className="text-sm font-semibold">{ebook.downloads}</span>
                       </div>
                     </div>
                   </CardHeader>
@@ -134,19 +138,13 @@ async function SharedResourcesContent() {
                       <span>{ebook.fileSize}</span>
                     </div>
 
-                    {/* Stats */}
-                    <div className="flex items-center gap-4 text-sm">
-                      <div className="flex items-center">
-                        <Download className="w-4 h-4 mr-1" />
-                        {ebook.downloads}
+                    {/* Rating */}
+                    {ebook.rating && (
+                      <div className="flex items-center gap-1 text-sm">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="font-medium">{ebook.rating.toFixed(1)}</span>
                       </div>
-                      {ebook.rating && (
-                        <div className="flex items-center">
-                          <Star className="w-4 h-4 mr-1 fill-yellow-400 text-yellow-400" />
-                          {ebook.rating.toFixed(1)}
-                        </div>
-                      )}
-                    </div>
+                    )}
 
                     {/* Action Button */}
                     <form action={async () => {
@@ -186,12 +184,26 @@ async function SharedResourcesContent() {
               {notes.map((note) => (
                 <Card key={note.noteId} className="flex flex-col">
                   <CardHeader>
-                    <CardTitle className="text-lg line-clamp-2">
-                      {note.title}
-                    </CardTitle>
-                    <CardDescription>
-                      {note.subject} • {note.topic}
-                    </CardDescription>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg line-clamp-2">
+                          {note.title}
+                        </CardTitle>
+                        <CardDescription>
+                          {note.subject} • {note.topic}
+                        </CardDescription>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full">
+                          <Eye className="w-4 h-4" />
+                          <span className="text-sm font-semibold">{note.views}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full">
+                          <Download className="w-4 h-4" />
+                          <span className="text-sm font-semibold">{note.downloads}</span>
+                        </div>
+                      </div>
+                    </div>
                   </CardHeader>
                   <CardContent className="flex-1 space-y-3">
                     {/* Institution */}
@@ -212,23 +224,13 @@ async function SharedResourcesContent() {
                       <Badge variant="outline">Sem {note.semester}</Badge>
                     </div>
 
-                    {/* Stats */}
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center">
-                        <Eye className="w-4 h-4 mr-1" />
-                        {note.views}
+                    {/* Rating */}
+                    {note.rating && (
+                      <div className="flex items-center gap-1 text-sm">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="font-medium">{note.rating.toFixed(1)}</span>
                       </div>
-                      <div className="flex items-center">
-                        <Download className="w-4 h-4 mr-1" />
-                        {note.downloads}
-                      </div>
-                      {note.rating && (
-                        <div className="flex items-center">
-                          <Star className="w-4 h-4 mr-1 fill-yellow-400 text-yellow-400" />
-                          {note.rating.toFixed(1)}
-                        </div>
-                      )}
-                    </div>
+                    )}
 
                     {/* File Info */}
                     <div className="flex items-center justify-between text-sm text-muted-foreground">

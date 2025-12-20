@@ -16,7 +16,7 @@ import {
 const ATTENDANCE_SHEET_ID = process.env.NEXT_PUBLIC_ATTENDANCE_SHEET_ID;
 const ATTENDANCE_SHEET_NAME = "FacultyAttendance";
 
-// Column mapping for Attendance sheet (A to Q = 17 columns)
+// Column mapping for Attendance sheet (Extended for Photo + GPS)
 const ATTENDANCE_COLUMNS = {
     ID: 0,                    // A
     FACULTY_ID: 1,            // B
@@ -26,14 +26,25 @@ const ATTENDANCE_COLUMNS = {
     DATE: 5,                  // F
     STATUS: 6,                // G
     CHECK_IN_TIME: 7,         // H
-    CHECK_OUT_TIME: 8,        // I
-    TOTAL_HOURS: 9,           // J
-    REMARKS: 10,              // K
-    MARKED_BY: 11,            // L
-    METHOD: 12,               // M
-    IS_LATE: 13,              // N
-    LATE_BY_MINUTES: 14,      // O
-    TIMESTAMP: 15,            // P
+    CHECK_IN_PHOTO_URL: 8,    // I
+    CHECK_IN_GPS: 9,          // J (JSON)
+    CHECK_IN_DEVICE: 10,      // K (JSON)
+    CHECK_OUT_TIME: 11,       // L
+    CHECK_OUT_PHOTO_URL: 12,  // M
+    CHECK_OUT_GPS: 13,        // N (JSON)
+    CHECK_OUT_DEVICE: 14,     // O (JSON)
+    TOTAL_HOURS: 15,          // P
+    REMARKS: 16,              // Q
+    MARKED_BY: 17,            // R
+    METHOD: 18,               // S
+    IS_LATE: 19,              // T
+    LATE_BY_MINUTES: 20,      // U
+    IS_WITHIN_GEOFENCE: 21,   // V
+    FLAGS: 22,                // W (JSON array)
+    REQUIRES_APPROVAL: 23,    // X
+    APPROVED_BY: 24,          // Y
+    APPROVED_AT: 25,          // Z
+    TIMESTAMP: 26,            // AA
 };
 
 /**
@@ -42,7 +53,7 @@ const ATTENDANCE_COLUMNS = {
 async function getSheetsClient() {
     const auth = new google.auth.GoogleAuth({
         credentials: {
-            client_email: process.env.GOOGLE_CLIENT_EMAIL,
+            client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
             private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
         },
         scopes: ["https://www.googleapis.com/auth/spreadsheets"],
@@ -91,13 +102,24 @@ function transformAttendanceToRow(attendance: Partial<FacultyAttendanceRecord>):
     row[ATTENDANCE_COLUMNS.DATE] = attendance.date || "";
     row[ATTENDANCE_COLUMNS.STATUS] = attendance.status || "";
     row[ATTENDANCE_COLUMNS.CHECK_IN_TIME] = attendance.checkInTime || "";
+    row[ATTENDANCE_COLUMNS.CHECK_IN_PHOTO_URL] = (attendance as any).checkInPhoto || "";
+    row[ATTENDANCE_COLUMNS.CHECK_IN_GPS] = (attendance as any).checkInGPS ? JSON.stringify((attendance as any).checkInGPS) : "";
+    row[ATTENDANCE_COLUMNS.CHECK_IN_DEVICE] = (attendance as any).checkInDevice ? JSON.stringify((attendance as any).checkInDevice) : "";
     row[ATTENDANCE_COLUMNS.CHECK_OUT_TIME] = attendance.checkOutTime || "";
+    row[ATTENDANCE_COLUMNS.CHECK_OUT_PHOTO_URL] = (attendance as any).checkOutPhoto || "";
+    row[ATTENDANCE_COLUMNS.CHECK_OUT_GPS] = (attendance as any).checkOutGPS ? JSON.stringify((attendance as any).checkOutGPS) : "";
+    row[ATTENDANCE_COLUMNS.CHECK_OUT_DEVICE] = (attendance as any).checkOutDevice ? JSON.stringify((attendance as any).checkOutDevice) : "";
     row[ATTENDANCE_COLUMNS.TOTAL_HOURS] = attendance.totalHours?.toString() || "";
     row[ATTENDANCE_COLUMNS.REMARKS] = attendance.remarks || "";
     row[ATTENDANCE_COLUMNS.MARKED_BY] = attendance.markedBy || "";
     row[ATTENDANCE_COLUMNS.METHOD] = attendance.method || "";
     row[ATTENDANCE_COLUMNS.IS_LATE] = attendance.isLate ? "TRUE" : "FALSE";
     row[ATTENDANCE_COLUMNS.LATE_BY_MINUTES] = attendance.lateByMinutes?.toString() || "";
+    row[ATTENDANCE_COLUMNS.IS_WITHIN_GEOFENCE] = (attendance as any).isWithinGeoFence ? "TRUE" : "FALSE";
+    row[ATTENDANCE_COLUMNS.FLAGS] = (attendance as any).flags ? JSON.stringify((attendance as any).flags) : "";
+    row[ATTENDANCE_COLUMNS.REQUIRES_APPROVAL] = (attendance as any).requiresApproval ? "TRUE" : "FALSE";
+    row[ATTENDANCE_COLUMNS.APPROVED_BY] = (attendance as any).approvedBy || "";
+    row[ATTENDANCE_COLUMNS.APPROVED_AT] = (attendance as any).approvedAt || "";
     row[ATTENDANCE_COLUMNS.TIMESTAMP] = attendance.timestamp || new Date().toISOString();
 
     return row;
@@ -112,7 +134,7 @@ export async function fetchAllAttendance(): Promise<FacultyAttendanceRecord[]> {
 
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: ATTENDANCE_SHEET_ID,
-            range: `${ATTENDANCE_SHEET_NAME}!A2:P`,
+            range: `${ATTENDANCE_SHEET_NAME}!A2:AA`, // Extended to include all 27 columns
         });
 
         const rows = response.data.values || [];
@@ -183,7 +205,7 @@ export async function markAttendance(attendance: Partial<FacultyAttendanceRecord
 
         await sheets.spreadsheets.values.append({
             spreadsheetId: ATTENDANCE_SHEET_ID,
-            range: `${ATTENDANCE_SHEET_NAME}!A:P`,
+            range: `${ATTENDANCE_SHEET_NAME}!A:AA`, // Extended to include all 27 columns
             valueInputOption: "RAW",
             requestBody: {
                 values: [row],
@@ -325,5 +347,83 @@ export async function getAttendanceStats(date: string) {
     } catch (error) {
         console.error("Error getting attendance stats:", error);
         throw new Error("Failed to get attendance statistics");
+    }
+}
+
+/**
+ * Fetch today's attendance records
+ */
+export async function fetchTodaysAttendance(date: string): Promise<FacultyAttendanceRecord[]> {
+    return fetchAttendanceByDate(date);
+}
+
+/**
+ * Fetch pending approval records
+ */
+export async function fetchPendingApprovals(): Promise<FacultyAttendanceRecord[]> {
+    try {
+        const sheets = await getSheetsClient();
+        
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: ATTENDANCE_SHEET_ID,
+            range: `${ATTENDANCE_SHEET_NAME}!A2:AA`,
+        });
+
+        const rows = response.data.values || [];
+
+        return rows
+            .map((row, index) => {
+                // Skip if not requiring approval
+                if (row[ATTENDANCE_COLUMNS.REQUIRES_APPROVAL] !== "TRUE") {
+                    return null;
+                }
+
+                return transformRowToAttendance(row, index);
+            })
+            .filter((record): record is FacultyAttendanceRecord => record !== null);
+
+    } catch (error) {
+        console.error("Error fetching pending approvals:", error);
+        throw new Error("Failed to fetch pending approvals");
+    }
+}
+
+/**
+ * Update attendance record by row number
+ * Helper for auto-approval system
+ */
+export async function updateAttendanceByRow(
+    rowNumber: number,
+    updates: Partial<FacultyAttendanceRecord>
+): Promise<void> {
+    try {
+        const sheets = await getSheetsClient();
+        
+        // Fetch the record to get current data
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: ATTENDANCE_SHEET_ID,
+            range: `${ATTENDANCE_SHEET_NAME}!A${rowNumber}:AA${rowNumber}`,
+        });
+
+        const rows = response.data.values || [];
+        if (rows.length === 0) {
+            throw new Error("Record not found");
+        }
+
+        const currentRecord = transformRowToAttendance(rows[0], rowNumber - 2);
+        const updatedRecord = { ...currentRecord, ...updates };
+        const row = transformAttendanceToRow(updatedRecord);
+
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: ATTENDANCE_SHEET_ID,
+            range: `${ATTENDANCE_SHEET_NAME}!A${rowNumber}:AA${rowNumber}`,
+            valueInputOption: "RAW",
+            requestBody: {
+                values: [row],
+            },
+        });
+    } catch (error) {
+        console.error("Error updating attendance by row:", error);
+        throw new Error("Failed to update attendance record");
     }
 }

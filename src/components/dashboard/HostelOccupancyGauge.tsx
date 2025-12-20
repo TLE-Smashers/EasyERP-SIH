@@ -3,6 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer } from "@/components/ui/chart"
 import { PieChart, Pie, Cell } from "recharts"
+import type { HostelOccupancyData } from "@/actions/hostel/getHostelOccupancy"
 
 interface OccupancyData {
   name: string
@@ -12,8 +13,7 @@ interface OccupancyData {
 }
 
 interface HostelOccupancyGaugeProps {
-  occupiedBeds?: number
-  totalBeds?: number
+  data: HostelOccupancyData
 }
 
 const chartConfig = {
@@ -27,14 +27,10 @@ const chartConfig = {
   },
 }
 
-export function HostelOccupancyGauge({ 
-  occupiedBeds = 236, 
-  totalBeds = 320 
-}: HostelOccupancyGaugeProps) {
-  const availableBeds = totalBeds - occupiedBeds
-  const occupancyPercentage = Math.round((occupiedBeds / totalBeds) * 100)
+export function HostelOccupancyGauge({ data }: HostelOccupancyGaugeProps) {
+  const { occupiedBeds, availableBeds, totalBeds, occupancyPercentage, maleHostel, femaleHostel } = data
 
-  const data: OccupancyData[] = [
+  const chartData: OccupancyData[] = [
     { name: "Occupied", value: occupiedBeds, fill: "#10b981" },
     { name: "Available", value: availableBeds, fill: "#e5e7eb" },
   ]
@@ -50,7 +46,7 @@ export function HostelOccupancyGauge({
   const occupancyColor = getOccupancyColor(occupancyPercentage)
 
   // Update data with dynamic color
-  data[0].fill = occupancyColor
+  chartData[0].fill = occupancyColor
 
   return (
     <Card>
@@ -66,7 +62,7 @@ export function HostelOccupancyGauge({
             <ChartContainer config={chartConfig} className="h-64 w-full max-w-sm">
               <PieChart>
                 <Pie
-                  data={data}
+                  data={chartData}
                   cx="50%"
                   cy="50%"
                   startAngle={180}
@@ -76,15 +72,15 @@ export function HostelOccupancyGauge({
                   paddingAngle={0}
                   dataKey="value"
                 >
-                  {data.map((entry, index) => (
+                  {chartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>
               </PieChart>
             </ChartContainer>
             <div className="absolute top-[60%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-              <div 
-                className="text-5xl font-bold mb-1" 
+              <div
+                className="text-5xl font-bold mb-1"
                 style={{ color: occupancyColor }}
               >
                 {occupancyPercentage}%
@@ -94,8 +90,8 @@ export function HostelOccupancyGauge({
           </div>
           <div className="grid grid-cols-3 gap-6 mt-6 w-full">
             <div className="text-center">
-              <div 
-                className="text-3xl font-bold mb-1" 
+              <div
+                className="text-3xl font-bold mb-1"
                 style={{ color: occupancyColor }}
               >
                 {occupiedBeds}
@@ -118,11 +114,15 @@ export function HostelOccupancyGauge({
           <div className="mt-6 w-full space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Male Hostel:</span>
-              <span className="font-semibold">148 / 180 beds (82%)</span>
+              <span className="font-semibold">
+                {maleHostel.occupied} / {maleHostel.total} beds ({maleHostel.percentage}%)
+              </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Female Hostel:</span>
-              <span className="font-semibold">88 / 140 beds (63%)</span>
+              <span className="font-semibold">
+                {femaleHostel.occupied} / {femaleHostel.total} beds ({femaleHostel.percentage}%)
+              </span>
             </div>
           </div>
         </div>

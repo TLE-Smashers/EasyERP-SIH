@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { WeeklyAttendanceHeatmap } from "@/components/dashboard/WeeklyAttendanceHeatmap";
-import { PerformanceTrendChart } from "@/components/dashboard/PerformanceTrendChart";
 import { FacultyTable } from "@/components/faculty/FacultyTable";
 import { FacultyDrawer } from "@/components/faculty/FacultyDrawer";
 import { getFaculty, getFacultyStats } from "@/actions/faculty/getFaculty";
@@ -53,14 +52,6 @@ export default function FacultyPage() {
                 getFaculty(),
                 getFacultyStats(),
             ]);
-            console.log("[Faculty Page] Loaded faculty count:", facultyData.length);
-            if (facultyData.length > 0) {
-                console.log("[Faculty Page] First faculty sample:", {
-                    id: facultyData[0].id,
-                    facultyId: facultyData[0].facultyId,
-                    name: facultyData[0].name
-                });
-            }
             setFaculty(facultyData);
             setStats(statsData);
         } catch (error) {
@@ -77,7 +68,6 @@ export default function FacultyPage() {
     }
 
     function handleEdit(id: string) {
-        console.log("[Faculty Page] Edit clicked for ID:", id);
         router.push(`/dashboard/faculty/edit/${id}`);
     }
 
@@ -129,6 +119,21 @@ export default function FacultyPage() {
                         <CardContent>
                             <p className="text-sm text-muted-foreground">
                                 View and update your information
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card
+                        className="cursor-pointer hover:shadow-md transition-shadow border-2 border-primary/20 bg-primary/5"
+                        onClick={() => router.push("/faculty/attendance")}
+                    >
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-base font-medium">📸 Mark My Attendance</CardTitle>
+                            <UserCheck className="h-6 w-6 text-primary" />
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm font-medium text-primary">
+                                Check-in/out with photo + GPS
                             </p>
                         </CardContent>
                     </Card>
@@ -187,6 +192,20 @@ export default function FacultyPage() {
                     </CardHeader>
                     <CardContent className="grid gap-4 md:grid-cols-3">
                         <Button
+                            variant="default"
+                            className="h-auto py-4 justify-start bg-primary"
+                            onClick={() => router.push("/faculty/attendance")}
+                        >
+                            <div className="flex items-center gap-3">
+                                <UserCheck className="h-5 w-5" />
+                                <div className="text-left">
+                                    <div className="font-medium">📸 Mark My Attendance</div>
+                                    <div className="text-xs opacity-90">Photo + GPS check-in/out</div>
+                                </div>
+                            </div>
+                        </Button>
+
+                        <Button
                             variant="outline"
                             className="h-auto py-4 justify-start"
                             onClick={() => router.push("/dashboard/faculty/attendance")}
@@ -235,14 +254,13 @@ export default function FacultyPage() {
                     <div>
                         <h2 className="text-2xl font-bold">Analytics & Insights</h2>
                         <p className="text-sm text-muted-foreground">
-                            Track attendance patterns and student performance trends
+                            Track attendance patterns
                         </p>
                     </div>
 
                     {/* Charts */}
-                    <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
+                    <div className="grid gap-4">
                         <WeeklyAttendanceHeatmap />
-                        <PerformanceTrendChart />
                     </div>
                 </div>
             </div>
